@@ -34,17 +34,21 @@ func (b binary) visitExpr(v visitor)(any, error){
 	return v.visitBinary(b)
 }
 
+type statement struct {
+	expression
+}
+
 type Parser struct {
 	it *iter[token]
 	Errors []error
-	Expressions []expression
+	statements []statement
 }
 
 func NewParser(toks []token) *Parser {
 	return &Parser{it: toIter(toks)}
 }
 
-func (p *Parser) Parse() ([]expression, []error) {
+func (p *Parser) Parse() ([]statement, []error) {
 	for  {
 		current, ok := p.it.current()
 		if !ok {
@@ -55,14 +59,14 @@ func (p *Parser) Parse() ([]expression, []error) {
 			p.Errors = append(p.Errors, err)
 			p.recover()
 		} else {
-			p.Expressions = append(p.Expressions, v)
+			p.statements = append(p.statements, statement{v})
 		}
 
 		if checkTokenType(current, semicolon) {
 			p.it.consume()
 		}
 	}
-	return p.Expressions, p.Errors
+	return p.statements, p.Errors
 }
 
 func (p *Parser) parseExpression() (expression,error) {

@@ -7,77 +7,69 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParse(t *testing.T) {
+func TestParseSingleExpressions(t *testing.T) {
 	testCases := []struct {
 		desc	string
 		input 	string
-		expected []expression
+		expected expression
 	}{
 		{
 			desc: "simple math expression",
 			input: "1 + 3",
-			expected: []expression{binary{op: token{operator, "+", 1}, left: literal(token{number, "1", 1}), right: literal(token{number, "3", 1})}},
+			expected: binary{op: token{operator, "+", 1}, left: literal(token{number, "1", 1}), right: literal(token{number, "3", 1})},
 		},
 		{
 			desc: "more complicated math expression",
 			input: "8*1 + 3 * 2",
-			expected: []expression{
-				binary{
-					op: token{operator, "+", 1}, 
-					left: binary{
-						op: token{operator, "*", 1},
-						left: literal(token{number, "8", 1}),
-						right: literal(token{number, "1", 1}),
-					}, 
-					right: binary{
-						op: token{operator, "*", 1},
-						left: literal(token{number, "3", 1}),
-						right: literal(token{number, "2", 1}),
-					},
+			expected: binary{
+				op: token{operator, "+", 1}, 
+				left: binary{
+					op: token{operator, "*", 1},
+					left: literal(token{number, "8", 1}),
+					right: literal(token{number, "1", 1}),
+				}, 
+				right: binary{
+					op: token{operator, "*", 1},
+					left: literal(token{number, "3", 1}),
+					right: literal(token{number, "2", 1}),
 				},
 			},
 		},
 		{
 			desc: "grouped math expression",
 			input: "8*1 / (3 + 2)",
-			expected: []expression{
-				binary{
-					op: token{operator, "/", 1}, 
-					left: binary{
-						op: token{operator, "*", 1},
-						left: literal(token{number, "8", 1}),
-						right: literal(token{number, "1", 1}),
-					}, 
-					right: binary{
-						op: token{operator, "+", 1},
-						left: literal(token{number, "3", 1}),
-						right: literal(token{number, "2", 1}),
-					},
+			expected: binary{
+				op: token{operator, "/", 1}, 
+				left: binary{
+					op: token{operator, "*", 1},
+					left: literal(token{number, "8", 1}),
+					right: literal(token{number, "1", 1}),
+				}, 
+				right: binary{
+					op: token{operator, "+", 1},
+					left: literal(token{number, "3", 1}),
+					right: literal(token{number, "2", 1}),
 				},
 			},
 		},
 		{
 			desc: "unary math expression",
 			input: "-3",
-			expected: []expression{
-				unary{
-					op: token{operator, "-", 1}, 
-					ex: literal(token{number, "3", 1}),
-				},
+			expected: unary{
+				op: token{operator, "-", 1}, 
+				ex: literal(token{number, "3", 1}),
 			},
 		},
 		{
 			desc: "binary with unary math expression",
 			input: "-3 + 4",
-			expected: []expression{
-				binary{
-					op: token{operator, "+", 1},
-					left: unary{
-						op: token{operator, "-", 1}, 
-						ex: literal(token{number, "3", 1}),
-					},
-					right: literal(token{number, "4", 1}),
+			expected: binary{
+				op: token{operator, "+", 1},
+				left: unary{
+					op: token{operator, "-", 1}, 
+					ex: literal(token{number, "3", 1}),
 				},
+				right: literal(token{number, "4", 1}),
 			},
 		},
 	}
@@ -88,8 +80,9 @@ func TestParse(t *testing.T) {
 
 			got, errs := NewParser(toks).Parse()
 			require.Empty(t, errs, "got parser errors")
+			require.Len(t, got, 1, "single expression expected")
 
-			assert.Equal(t, tC.expected, got)
+			assert.Equal(t, []statement{{tC.expected}}, got)
 		})
 	}
 }

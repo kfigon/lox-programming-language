@@ -11,7 +11,7 @@ type loxObject struct {
 
 type interpreter struct{}
 
-func interpret(expr []expression) ([]loxObject, error) {
+func interpret(expr []statement) ([]loxObject, error) {
 	var out []loxObject
 	i := &interpreter{}
 	for _, e := range expr {
