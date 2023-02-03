@@ -50,23 +50,31 @@ func NewParser(toks []token) *Parser {
 
 func (p *Parser) Parse() ([]statement, []error) {
 	for current, ok := p.it.current(); ok; current, ok = p.it.current() {
+		_ = current
 
-		v, err := p.parseExpression()
+		v, err := p.parseStatement()
 		if err != nil {
 			p.Errors = append(p.Errors, err)
 			p.recover()
 			continue
-		} 
-		current, ok = p.it.current()
-		if ok && checkTokenType(current, semicolon) {
-			p.it.consume()
-			p.statements = append(p.statements, statement{v})
-		}  else {
-			p.Errors = append(p.Errors, fmt.Errorf("unterminated statement at line %d", current.line))
 		}
-		p.it.consume()
+		
+		p.statements = append(p.statements, v)
 	}
 	return p.statements, p.Errors
+}
+
+func (p *Parser) parseStatement() (statement, error) {
+	v, err := p.parseExpression()
+	if err != nil {
+		return statement{}, err
+	} 
+	current, ok := p.it.current()
+	if ok && checkTokenType(current, semicolon) {
+		p.it.consume()
+		return statement{v}, nil
+	} 
+	return statement{}, fmt.Errorf("unterminated statement at line %d", current.line)
 }
 
 func (p *Parser) parseExpression() (expression,error) {

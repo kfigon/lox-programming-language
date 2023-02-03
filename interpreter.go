@@ -48,7 +48,7 @@ func (i *interpreter) visitLiteral(li literal) (any, error) {
 func (i *interpreter) visitUnary(u unary) (any, error) {
 	op := u.op.lexeme
 
-	exp, err := u.ex.visitExpr(&interpreter{})
+	exp, err := u.ex.visitExpr(i)
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +70,8 @@ func (i *interpreter) visitUnary(u unary) (any, error) {
 }
 
 func (i *interpreter) visitBinary(b binary) (any, error) {
-	leftV, leftErr := b.left.visitExpr(&interpreter{})
-	rightV, rightErr := b.right.visitExpr(&interpreter{})
+	leftV, leftErr := b.left.visitExpr(i)
+	rightV, rightErr := b.right.visitExpr(i)
 
 	if leftErr != nil {
 		return nil, leftErr

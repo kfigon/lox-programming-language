@@ -53,7 +53,7 @@ func checkTokenType(tok token, tokType tokenType) bool {
 }
 
 func isKeyword(word string) bool {
-	return word == "let" || word == "for" || word == "return" || word == "else" || word == "if"
+	return word == "let" || word == "while" || word == "return" || word == "else" || word == "if"
 }
 
 func lex(input string) ([]token, error) {
