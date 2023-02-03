@@ -212,12 +212,7 @@ func eofError() error {
 }
 
 func (p *Parser) recover() {
-	for {
-		current, ok := p.it.current()
-		if !ok {
-			break
-		}
-
+	for current, ok := p.it.current(); ok; current, ok = p.it.current() {
 		if checkTokenType(current, semicolon) {
 			p.it.consume()
 			break
