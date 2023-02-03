@@ -15,97 +15,97 @@ func TestInterpretExpression(t *testing.T) {
 	}{
 		{
 			desc:     "simple numeric literal",
-			input:    "15",
+			input:    "15;",
 			expected: []loxObject{toLoxObj(15)},
 		},
 		{
 			desc:     "string literal",
-			input:    "\"hello\"",
+			input:    "\"hello\";",
 			expected: []loxObject{toLoxObj("hello")},
 		},
 		{
 			desc:     "bool literal",
-			input:    "true",
+			input:    "true;",
 			expected: []loxObject{toLoxObj(true)},
 		},
 		{
 			desc:     "simple expression1",
-			input:    "15+5",
+			input:    "15+5;",
 			expected: []loxObject{toLoxObj(20)},
 		},
 		{
 			desc:     "simple expression2",
-			input:    "15-5",
+			input:    "15-5;",
 			expected: []loxObject{toLoxObj(10)},
 		},
 		{
 			desc:     "simple expression3",
-			input:    "5-17",
+			input:    "5-17;",
 			expected: []loxObject{toLoxObj(-12)},
 		},
 		{
 			desc:     "simple expression4",
-			input:    "3*5",
+			input:    "3*5;",
 			expected: []loxObject{toLoxObj(15)},
 		},
 		{
 			desc:     "simple expression5",
-			input:    "15/5",
+			input:    "15/5;",
 			expected: []loxObject{toLoxObj(3)},
 		},
 		{
 			desc:     "unary expr1",
-			input:    "-15",
+			input:    "-15;",
 			expected: []loxObject{toLoxObj(-15)},
 		},
 		{
 			desc:     "unary expr2",
-			input:    "!false",
+			input:    "!false;",
 			expected: []loxObject{toLoxObj(true)},
 		},
 		{
 			desc:     "complicated expr",
-			input:    "5*3+1",
+			input:    "5*3+1;",
 			expected: []loxObject{toLoxObj(16)},
 		},
 		{
 			desc:     "complicated expr2",
-			input:    "1+5*3",
+			input:    "1+5*3;",
 			expected: []loxObject{toLoxObj(16)},
 		},
 		{
 			desc:     "complicated expr3",
-			input:    "(1+5)*3 + 2",
+			input:    "(1+5)*3 + 2;",
 			expected: []loxObject{toLoxObj(20)},
 		},
 		{
 			desc:     "complicated expr4",
-			input:    "1+5*3 + 2",
+			input:    "1+5*3 + 2;",
 			expected: []loxObject{toLoxObj(18)},
 		},
 		{
 			desc:     "boolean expr",
-			input:    "5*3+1 == 16",
+			input:    "5*3+1 == 16;",
 			expected: []loxObject{toLoxObj(true)},
 		},
 		{
 			desc:     "boolean expr2",
-			input:    "true == !true",
+			input:    "true == !true;",
 			expected: []loxObject{toLoxObj(false)},
 		},
 		{
 			desc:     "boolean expr3",
-			input:    "!false != !true",
+			input:    "!false != !true;",
 			expected: []loxObject{toLoxObj(true)},
 		},
 		{
 			desc:     "string concantenation and comparison",
-			input:    `"foo" + "bar" == "foobar"`,
+			input:    `"foo" + "bar" == "foobar";`,
 			expected: []loxObject{toLoxObj(true)},
 		},
 		{
 			desc:     "string concantenation",
-			input:    `"foo" + "bar"`,
+			input:    `"foo" + "bar";`,
 			expected: []loxObject{toLoxObj("foobar")},
 		},
 	}
@@ -129,7 +129,7 @@ func TestInterpretExpression(t *testing.T) {
 
 func TestInvalidExpressions(t *testing.T) {
 	t.Run("mismatched types", func(t *testing.T) {
-		input := `2 * (3 / -"muffin")`
+		input := `2 * (3 / -"muffin");`
 		toks, err := lex(input)
 		require.NoError(t, err, "got lexer error")
 

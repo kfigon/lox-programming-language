@@ -14,13 +14,18 @@ func TestParseSingleExpressions(t *testing.T) {
 		expected expression
 	}{
 		{
+			desc: "simple literal expression",
+			input: "3;",
+			expected: literal(token{number, "3", 1}),
+		},
+		{
 			desc: "simple math expression",
-			input: "1 + 3",
+			input: "1 + 3;",
 			expected: binary{op: token{operator, "+", 1}, left: literal(token{number, "1", 1}), right: literal(token{number, "3", 1})},
 		},
 		{
 			desc: "more complicated math expression",
-			input: "8*1 + 3 * 2",
+			input: "8*1 + 3 * 2;",
 			expected: binary{
 				op: token{operator, "+", 1}, 
 				left: binary{
@@ -37,7 +42,7 @@ func TestParseSingleExpressions(t *testing.T) {
 		},
 		{
 			desc: "grouped math expression",
-			input: "8*1 / (3 + 2)",
+			input: "8*1 / (3 + 2);",
 			expected: binary{
 				op: token{operator, "/", 1}, 
 				left: binary{
@@ -54,7 +59,7 @@ func TestParseSingleExpressions(t *testing.T) {
 		},
 		{
 			desc: "unary math expression",
-			input: "-3",
+			input: "-3;",
 			expected: unary{
 				op: token{operator, "-", 1}, 
 				ex: literal(token{number, "3", 1}),
@@ -62,7 +67,7 @@ func TestParseSingleExpressions(t *testing.T) {
 		},
 		{
 			desc: "binary with unary math expression",
-			input: "-3 + 4",
+			input: "-3 + 4;",
 			expected: binary{
 				op: token{operator, "+", 1},
 				left: unary{
