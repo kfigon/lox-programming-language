@@ -214,9 +214,14 @@ func eofError() error {
 func (p *Parser) recover() {
 	for {
 		current, ok := p.it.current()
-		if !ok || checkTokenType(current, semicolon) { // todo: more synchronisation tokens
+		if !ok {
 			break
 		}
+
+		if checkTokenType(current, semicolon) {
+			p.it.consume()
+			break
+		} 
 		p.it.consume()
 	}
 }
