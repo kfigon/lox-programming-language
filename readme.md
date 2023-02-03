@@ -29,12 +29,8 @@ symbols:
 
 ```
 program        → statement* ;
-
-statement      → exprStmt
-               | printStmt ;
-
+statement      → exprStmt ;
 exprStmt       → expression ";" ;
-
 
 expression     → equality ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;

@@ -11,11 +11,11 @@ type loxObject struct {
 
 type interpreter struct{}
 
-func interpret(expr []statement) ([]loxObject, error) {
+func interpret(stms []statement) ([]loxObject, error) {
 	var out []loxObject
 	i := &interpreter{}
-	for _, e := range expr {
-		v, err := e.visitExpr(i)
+	for _, stmt := range stms {
+		v, err := stmt.visitExpr(i)
 		if err != nil {
 			return nil, err
 		} else {
