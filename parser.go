@@ -195,9 +195,6 @@ func (p *Parser) parsePrimary() (expression,error) {
 	} else if checkTokenType(current, number) || checkTokenType(current, boolean) || checkTokenType(current, stringLiteral) {
 		p.it.consume()
 		return literal(current), nil
-	} else if checkTokenType(current, semicolon) {
-		p.it.consume()
-		return p.parseExpression()
 	}
 	return nil, makeError(current, "unexpected token when parsing primary expression")
 }

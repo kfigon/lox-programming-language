@@ -99,11 +99,6 @@ func TestInterpretExpression(t *testing.T) {
 			expected: []loxObject{toLoxObj(true)},
 		},
 		{
-			desc:     "multiple expressions",
-			input:    `true;!true`,
-			expected: []loxObject{toLoxObj(true), toLoxObj(false)},
-		},
-		{
 			desc:     "string concantenation and comparison",
 			input:    `"foo" + "bar" == "foobar"`,
 			expected: []loxObject{toLoxObj(true)},

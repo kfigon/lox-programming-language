@@ -28,6 +28,14 @@ symbols:
 * `*` - 0 or more ( >= 0)
 
 ```
+program        → statement* ;
+
+statement      → exprStmt
+               | printStmt ;
+
+exprStmt       → expression ";" ;
+
+
 expression     → equality ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;

@@ -19,15 +19,6 @@ func TestParse(t *testing.T) {
 			expected: []expression{binary{op: token{operator, "+", 1}, left: literal(token{number, "1", 1}), right: literal(token{number, "3", 1})}},
 		},
 		{
-			desc: "2 expressions",
-			input: `1 + 3;
-			18 - 1;`,
-			expected: []expression{
-				binary{op: token{operator, "+", 1}, left: literal(token{number, "1", 1}), right: literal(token{number, "3", 1})},
-				binary{op: token{operator, "-", 2}, left: literal(token{number, "18", 2}), right: literal(token{number, "1", 2})},
-			},
-		},
-		{
 			desc: "more complicated math expression",
 			input: "8*1 + 3 * 2",
 			expected: []expression{
