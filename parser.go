@@ -221,7 +221,7 @@ func (p *Parser) recover() {
 		if checkTokenType(current, semicolon) {
 			p.it.consume()
 			break
-		} 
+		}
 		p.it.consume()
 	}
 }
