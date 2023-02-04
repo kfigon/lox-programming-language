@@ -11,8 +11,12 @@ type loxObject struct {
 
 type interpreter struct{}
 
+func newInterpreter() *interpreter {
+	return &interpreter{}
+}
+
 func interpret(stms []statement) error {
-	i := &interpreter{}
+	i := newInterpreter()
 	for _, stmt := range stms {
 		err := stmt.visitStatement(i)
 		if err != nil {
