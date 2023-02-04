@@ -55,14 +55,14 @@ func interpreterMode() {
 				fmt.Println("got parser errors: ", errs)
 				continue
 			}			
-			got, err := interpret(exp)
+			err = interpret(exp)
 			if err != nil {
 				fmt.Println("got interpreter error:",err)
 				continue
 			}
-			for _,v := range got {
-				fmt.Println(*(v.v))
-			}
+			// for _,v := range got {
+			// 	fmt.Println(*(v.v))
+			// }
 		}
 	}
 }

@@ -87,7 +87,7 @@ func TestParseSingleExpressions(t *testing.T) {
 			require.Empty(t, errs, "got parser errors")
 			require.Len(t, got, 1, "single expression expected")
 
-			assert.Equal(t, []statement{{tC.expected}}, got)
+			assert.Equal(t, []statement{statementExpression{tC.expected}}, got)
 		})
 	}
 }

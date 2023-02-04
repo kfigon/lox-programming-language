@@ -3,17 +3,17 @@ package main
 import "fmt"
 
 type expression interface {
-	visitExpr(visitor) (any, error)
+	visitExpr(visitorExpr) (any, error)
 }
 
-type visitor interface {
+type visitorExpr interface {
 	visitLiteral(literal) (any, error)
 	visitUnary(unary) (any, error)
 	visitBinary(binary) (any, error)
 }
 
 type literal token
-func (l literal) visitExpr(v visitor) (any, error) {
+func (l literal) visitExpr(v visitorExpr) (any, error) {
 	return v.visitLiteral(l)
 }
 
@@ -21,7 +21,7 @@ type unary struct {
 	op token
 	ex expression
 }
-func (u unary) visitExpr(v visitor)(any, error) {
+func (u unary) visitExpr(v visitorExpr)(any, error) {
 	return v.visitUnary(u)
 }
 
@@ -30,13 +30,25 @@ type binary struct {
 	left expression
 	right expression
 }
-func (b binary) visitExpr(v visitor)(any, error){
+func (b binary) visitExpr(v visitorExpr)(any, error){
 	return v.visitBinary(b)
 }
 
-type statement struct {
+type statement interface {
+	visitStatement(visitorStatement) error
+}
+
+type visitorStatement interface {
+	visitStatementExpression(statementExpression) error
+}
+
+type statementExpression struct {
 	expression
 }
+func (s statementExpression) visitStatement(v visitorStatement) error {
+	return v.visitStatementExpression(s)
+}
+
 
 type Parser struct {
 	it *iter[token]
@@ -67,14 +79,14 @@ func (p *Parser) Parse() ([]statement, []error) {
 func (p *Parser) parseStatement() (statement, error) {
 	v, err := p.parseExpression()
 	if err != nil {
-		return statement{}, err
+		return nil, err
 	} 
 	current, ok := p.it.current()
 	if ok && checkTokenType(current, semicolon) {
 		p.it.consume()
-		return statement{v}, nil
+		return statementExpression{v}, nil
 	} 
-	return statement{}, fmt.Errorf("unterminated statement at line %d", current.line)
+	return nil, fmt.Errorf("unterminated statement at line %d", current.line)
 }
 
 func (p *Parser) parseExpression() (expression,error) {
