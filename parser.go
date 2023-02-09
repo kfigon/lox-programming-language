@@ -67,7 +67,7 @@ func (p *Parser) parseLetStatement() (statement, error) {
 	current, _ := p.it.current()
 	name := current.lexeme
 	p.it.consume() // identifier
-	
+
 	if err := p.ensureCurrentToken(operator, "="); err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (p *Parser) parsePrimary() (expression, error) {
 		}
 
 		if err = p.ensureCurrentToken(closing, ")"); err != nil {
-			return nil ,err
+			return nil, err
 		}
 		p.it.consume()
 		return ex, nil
