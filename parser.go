@@ -272,7 +272,7 @@ func (p *Parser) parsePrimary() (expression, error) {
 				return nil, makeError(next, "unmatched ')'")
 			}
 		}
-	} else if checkTokenType(current, number) || checkTokenType(current, boolean) || checkTokenType(current, stringLiteral) {
+	} else if checkTokenType(current, number) || checkTokenType(current, boolean) || checkTokenType(current, stringLiteral) || checkTokenType(current, identifier) {
 		p.it.consume()
 		return literal(current), nil
 	}

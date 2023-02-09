@@ -89,6 +89,15 @@ func TestParseSingleExpressions(t *testing.T) {
 				right: literal(token{number, "4", 1}),
 			},
 		},
+		{
+			desc: "primary with literals",
+			input: "3 + foo;",
+			expected: binary{
+				op: token{operator, "+", 1},
+				left: literal(token{number, "3", 1}),
+				right: literal(token{identifier, "foo", 1}),
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
