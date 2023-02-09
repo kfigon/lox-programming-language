@@ -4,16 +4,16 @@ based on https://craftinginterpreters.com/contents.html
 
 ## run
 ```
-go run .
+make run
 ```
 ### more params
 * run without params to run interpreter
-* run with a file name to run the interpreter on the file itself
+* `go run . ` with a file name to run the interpreter on the file itself
 
 
 ## test
 ```
-go test ./...
+make test
 ```
 
 
