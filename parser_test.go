@@ -142,7 +142,13 @@ func TestStatements(t *testing.T) {
 			desc: "let statement",
 			input: "let foo = -123;",
 			expected: []statement{
-				letStatement{ literal(token{number, "-123", 1}) },
+				letStatement{ 
+					"foo", 
+					unary{
+						token{operator, "-", 1},
+						literal(token{number, "123", 1}),
+					},
+				},
 			},
 		},
 	}

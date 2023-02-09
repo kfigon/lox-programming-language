@@ -55,6 +55,7 @@ func (s statementExpression) acceptStatement(v visitorStatement) error {
 }
 
 type letStatement struct {
+	name string
 	expression
 }
 
@@ -88,7 +89,7 @@ func (p *Parser) Parse() ([]statement, []error) {
 	return p.statements, p.Errors
 }
 
-func (p *Parser) parseStatement() (statement, error) {
+func (p *Parser) parseTerminatedExpression() (expression, error) {
 	v, err := p.parseExpression()
 	if err != nil {
 		return nil, err
@@ -96,9 +97,52 @@ func (p *Parser) parseStatement() (statement, error) {
 	current, ok := p.it.current()
 	if ok && checkTokenType(current, semicolon) {
 		p.it.consume()
-		return statementExpression{v}, nil
+		return v, nil
 	}
 	return nil, fmt.Errorf("unterminated statement at line %d", current.line)
+}
+
+func (p *Parser) parseStatement() (statement, error) {
+	current, ok := p.it.current()
+	if !ok {
+		return nil, eofError()
+	}
+
+	if checkToken(current, keyword, "let") {
+		return p.parseLetStatement()
+	}
+
+	v, err := p.parseTerminatedExpression()
+	if err != nil {
+		return nil, err
+	} 
+	return statementExpression{v}, nil
+}
+
+func (p *Parser) parseLetStatement() (statement, error) {
+	p.it.consume() // let
+	current, ok := p.it.current()
+	if !ok {
+		return nil, eofError()
+	} else if !checkTokenType(current, identifier) {
+		return nil, fmt.Errorf("identifier not found after let statement %v, line %d", current, current.line)
+	}
+
+	name := current.lexeme
+	p.it.consume()
+	current, ok = p.it.current()
+	if !ok {
+		return nil, eofError()
+	} else if !checkToken(current, operator, "=") {
+		return nil, fmt.Errorf("assignment not found after let statement %v, line %d", current, current.line)
+	}
+	p.it.consume()
+
+	v, err := p.parseTerminatedExpression()
+	if err != nil {
+		return nil, err
+	} 
+	return letStatement{name, v}, nil
 }
 
 func (p *Parser) parseExpression() (expression, error) {
