@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 type expression interface {
-	visitExpr(visitorExpr) (any, error)
+	acceptExpr(visitorExpr) (any, error)
 }
 
 type visitorExpr interface {
@@ -13,7 +13,8 @@ type visitorExpr interface {
 }
 
 type literal token
-func (l literal) visitExpr(v visitorExpr) (any, error) {
+
+func (l literal) acceptExpr(v visitorExpr) (any, error) {
 	return v.visitLiteral(l)
 }
 
@@ -21,21 +22,23 @@ type unary struct {
 	op token
 	ex expression
 }
-func (u unary) visitExpr(v visitorExpr)(any, error) {
+
+func (u unary) acceptExpr(v visitorExpr) (any, error) {
 	return v.visitUnary(u)
 }
 
 type binary struct {
-	op token
-	left expression
+	op    token
+	left  expression
 	right expression
 }
-func (b binary) visitExpr(v visitorExpr)(any, error){
+
+func (b binary) acceptExpr(v visitorExpr) (any, error) {
 	return v.visitBinary(b)
 }
 
 type statement interface {
-	visitStatement(visitorStatement) error
+	acceptStatement(visitorStatement) error
 }
 
 type visitorStatement interface {
@@ -46,21 +49,22 @@ type visitorStatement interface {
 type statementExpression struct {
 	expression
 }
-func (s statementExpression) visitStatement(v visitorStatement) error {
+
+func (s statementExpression) acceptStatement(v visitorStatement) error {
 	return v.visitStatementExpression(s)
 }
 
 type letStatement struct {
 	expression
 }
-func (s letStatement) visitStatement(v visitorStatement) error {
+
+func (s letStatement) acceptStatement(v visitorStatement) error {
 	return v.visitLetStatement(s)
 }
 
-
 type Parser struct {
-	it *iter[token]
-	Errors []error
+	it         *iter[token]
+	Errors     []error
 	statements []statement
 }
 
@@ -78,7 +82,7 @@ func (p *Parser) Parse() ([]statement, []error) {
 			p.recover()
 			continue
 		}
-		
+
 		p.statements = append(p.statements, v)
 	}
 	return p.statements, p.Errors
@@ -88,29 +92,29 @@ func (p *Parser) parseStatement() (statement, error) {
 	v, err := p.parseExpression()
 	if err != nil {
 		return nil, err
-	} 
+	}
 	current, ok := p.it.current()
 	if ok && checkTokenType(current, semicolon) {
 		p.it.consume()
 		return statementExpression{v}, nil
-	} 
+	}
 	return nil, fmt.Errorf("unterminated statement at line %d", current.line)
 }
 
-func (p *Parser) parseExpression() (expression,error) {
+func (p *Parser) parseExpression() (expression, error) {
 	return p.parseEquality()
 }
 
-func (p *Parser) parseEquality() (expression,error) {
-	ex,err := p.parseComparison()
+func (p *Parser) parseEquality() (expression, error) {
+	ex, err := p.parseComparison()
 	if err != nil {
 		return nil, err
 	}
-	for  {
+	for {
 		current, ok := p.it.current()
 		if ok && (checkToken(current, operator, "!=") || checkToken(current, operator, "==")) {
 			p.it.consume()
-			e,err :=p.parseComparison()
+			e, err := p.parseComparison()
 			if err != nil {
 				return nil, err
 			}
@@ -122,15 +126,15 @@ func (p *Parser) parseEquality() (expression,error) {
 	return ex, nil
 }
 
-func (p *Parser) parseComparison() (expression,error) {
-	ex,err := p.parseTerm()
+func (p *Parser) parseComparison() (expression, error) {
+	ex, err := p.parseTerm()
 	if err != nil {
 		return nil, err
 	}
-	for  {
+	for {
 		current, ok := p.it.current()
-		if ok && (checkToken(current, operator, ">") || 
-			checkToken(current, operator, ">=") || 
+		if ok && (checkToken(current, operator, ">") ||
+			checkToken(current, operator, ">=") ||
 			checkToken(current, operator, "<") ||
 			checkToken(current, operator, "<=")) {
 			p.it.consume()
@@ -143,15 +147,15 @@ func (p *Parser) parseComparison() (expression,error) {
 			break
 		}
 	}
-	return ex,nil
+	return ex, nil
 }
 
-func (p *Parser) parseTerm() (expression,error) {
-	ex,err := p.parseFactor()
+func (p *Parser) parseTerm() (expression, error) {
+	ex, err := p.parseFactor()
 	if err != nil {
 		return nil, err
 	}
-	for  {
+	for {
 		current, ok := p.it.current()
 		if ok && (checkToken(current, operator, "-") || checkToken(current, operator, "+")) {
 			p.it.consume()
@@ -164,15 +168,15 @@ func (p *Parser) parseTerm() (expression,error) {
 			break
 		}
 	}
-	return ex,nil
+	return ex, nil
 }
 
-func (p *Parser) parseFactor() (expression,error) {
-	ex,err := p.parseUnary()
+func (p *Parser) parseFactor() (expression, error) {
+	ex, err := p.parseUnary()
 	if err != nil {
 		return nil, err
 	}
-	for  {
+	for {
 		current, ok := p.it.current()
 		if ok && (checkToken(current, operator, "/") || checkToken(current, operator, "*")) {
 			p.it.consume()
@@ -185,10 +189,10 @@ func (p *Parser) parseFactor() (expression,error) {
 			break
 		}
 	}
-	return ex,nil
+	return ex, nil
 }
 
-func (p *Parser) parseUnary() (expression,error) {
+func (p *Parser) parseUnary() (expression, error) {
 	current, ok := p.it.current()
 	if ok && (checkToken(current, operator, "!") || checkToken(current, operator, "-")) {
 		op := current
@@ -198,17 +202,17 @@ func (p *Parser) parseUnary() (expression,error) {
 			return nil, err
 		}
 		return unary{op: op, ex: e}, nil
-	} 
+	}
 	return p.parsePrimary()
 }
 
-func (p *Parser) parsePrimary() (expression,error) {
+func (p *Parser) parsePrimary() (expression, error) {
 	current, ok := p.it.current()
 	if !ok {
 		return nil, eofError()
 	} else if checkToken(current, opening, "(") {
 		p.it.consume()
-		ex,err := p.parseExpression()
+		ex, err := p.parseExpression()
 		if err != nil {
 			return nil, err
 		}

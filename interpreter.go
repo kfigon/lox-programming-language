@@ -18,7 +18,7 @@ func newInterpreter() *interpreter {
 func interpret(stms []statement) error {
 	i := newInterpreter()
 	for _, stmt := range stms {
-		err := stmt.visitStatement(i)
+		err := stmt.acceptStatement(i)
 		if err != nil {
 			return err
 		}
@@ -27,13 +27,13 @@ func interpret(stms []statement) error {
 }
 
 func (i *interpreter) visitStatementExpression(s statementExpression) error {
-	v, err := s.expression.visitExpr(i)
+	v, err := s.expression.acceptExpr(i)
 	_ = v // todo
 	return err
 }
 
 func (i *interpreter) visitLetStatement(let letStatement) error {
-	v, err := let.expression.visitExpr(i)
+	v, err := let.expression.acceptExpr(i)
 	_ = v // todo
 	return err
 }
@@ -61,7 +61,7 @@ func (i *interpreter) visitLiteral(li literal) (any, error) {
 func (i *interpreter) visitUnary(u unary) (any, error) {
 	op := u.op.lexeme
 
-	exp, err := u.ex.visitExpr(i)
+	exp, err := u.ex.acceptExpr(i)
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +83,8 @@ func (i *interpreter) visitUnary(u unary) (any, error) {
 }
 
 func (i *interpreter) visitBinary(b binary) (any, error) {
-	leftV, leftErr := b.left.visitExpr(i)
-	rightV, rightErr := b.right.visitExpr(i)
+	leftV, leftErr := b.left.acceptExpr(i)
+	rightV, rightErr := b.right.acceptExpr(i)
 
 	if leftErr != nil {
 		return nil, leftErr

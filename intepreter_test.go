@@ -123,7 +123,7 @@ func TestInterpretExpression(t *testing.T) {
 			expStmt, ok := smts[0].(expression)
 			require.True(t, ok, "single expression statement")
 
-			got, err := expStmt.visitExpr(newInterpreter())
+			got, err := expStmt.acceptExpr(newInterpreter())
 			require.NoError(t, err, "got intepreter error")
 			assert.Equal(t, tC.expected, got)
 		})
