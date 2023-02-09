@@ -29,7 +29,9 @@ symbols:
 
 ```
 program        → statement* ;
-statement      → exprStmt ;
+
+statement      → letDecl
+               | exprStmt ;
 exprStmt       → expression ";" ;
 
 expression     → equality ;

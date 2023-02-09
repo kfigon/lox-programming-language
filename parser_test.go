@@ -7,6 +7,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func parseIt(t *testing.T, input string) []statement {
+	toks,err := lex(input)
+	require.NoError(t, err, "got lexer error")
+
+	got, errs := NewParser(toks).Parse()
+	require.Empty(t, errs, "got parser errors")
+	if len(errs) != 0 {
+		return nil
+	}
+	return got
+}
+
 func TestParseSingleExpressions(t *testing.T) {
 	testCases := []struct {
 		desc	string
@@ -77,14 +89,22 @@ func TestParseSingleExpressions(t *testing.T) {
 				right: literal(token{number, "4", 1}),
 			},
 		},
+		{
+			desc: "let statement",
+			input: "let = -3;",
+			expected: binary{
+				op: token{operator, "+", 1},
+				left: unary{
+					op: token{operator, "-", 1}, 
+					ex: literal(token{number, "3", 1}),
+				},
+				right: literal(token{number, "4", 1}),
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			toks,err := lex(tC.input)
-			require.NoError(t, err, "got lexer error")
-
-			got, errs := NewParser(toks).Parse()
-			require.Empty(t, errs, "got parser errors")
+			got := parseIt(t, tC.input)
 			require.Len(t, got, 1, "single expression expected")
 
 			assert.Equal(t, []statement{statementExpression{tC.expected}}, got)
@@ -120,6 +140,28 @@ func TestParserErrors(t *testing.T) {
 			p.Parse()
 			_, errs := p.Parse()
 			require.NotEmpty(t, errs, "expected parser errors")
+		})
+	}
+}
+
+func TestStatements(t *testing.T) {
+	testCases := []struct {
+		desc	string
+		input 	string
+		expected []statement
+	}{
+		{
+			desc: "let statement",
+			input: "let foo = -123;",
+			expected: []statement{
+				letStatement{ literal(token{number, "-123", 1}) },
+			},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := parseIt(t, tC.input)
+			assert.Equal(t, tC.expected, got)
 		})
 	}
 }

@@ -40,6 +40,7 @@ type statement interface {
 
 type visitorStatement interface {
 	visitStatementExpression(statementExpression) error
+	visitLetStatement(letStatement) error
 }
 
 type statementExpression struct {
@@ -47,6 +48,13 @@ type statementExpression struct {
 }
 func (s statementExpression) visitStatement(v visitorStatement) error {
 	return v.visitStatementExpression(s)
+}
+
+type letStatement struct {
+	expression
+}
+func (s letStatement) visitStatement(v visitorStatement) error {
+	return v.visitLetStatement(s)
 }
 
 

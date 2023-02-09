@@ -30,9 +30,12 @@ func (i *interpreter) visitStatementExpression(s statementExpression) error {
 	v, err := s.expression.visitExpr(i)
 	_ = v // todo
 	return err
-		// else {
-		// 	out = append(out, v.(loxObject))
-		// }
+}
+
+func (i *interpreter) visitLetStatement(let letStatement) error {
+	v, err := let.expression.visitExpr(i)
+	_ = v // todo
+	return err
 }
 
 func (i *interpreter) visitLiteral(li literal) (any, error) {
