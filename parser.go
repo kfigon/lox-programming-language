@@ -2,67 +2,6 @@ package main
 
 import "fmt"
 
-type expression interface {
-	acceptExpr(visitorExpr) (any, error)
-}
-
-type visitorExpr interface {
-	visitLiteral(literal) (any, error)
-	visitUnary(unary) (any, error)
-	visitBinary(binary) (any, error)
-}
-
-type literal token
-
-func (l literal) acceptExpr(v visitorExpr) (any, error) {
-	return v.visitLiteral(l)
-}
-
-type unary struct {
-	op token
-	ex expression
-}
-
-func (u unary) acceptExpr(v visitorExpr) (any, error) {
-	return v.visitUnary(u)
-}
-
-type binary struct {
-	op    token
-	left  expression
-	right expression
-}
-
-func (b binary) acceptExpr(v visitorExpr) (any, error) {
-	return v.visitBinary(b)
-}
-
-type statement interface {
-	acceptStatement(visitorStatement) error
-}
-
-type visitorStatement interface {
-	visitStatementExpression(statementExpression) error
-	visitLetStatement(letStatement) error
-}
-
-type statementExpression struct {
-	expression
-}
-
-func (s statementExpression) acceptStatement(v visitorStatement) error {
-	return v.visitStatementExpression(s)
-}
-
-type letStatement struct {
-	name string
-	expression
-}
-
-func (s letStatement) acceptStatement(v visitorStatement) error {
-	return v.visitLetStatement(s)
-}
-
 type Parser struct {
 	it         *iter[token]
 	Errors     []error
@@ -74,8 +13,7 @@ func NewParser(toks []token) *Parser {
 }
 
 func (p *Parser) Parse() ([]statement, []error) {
-	for current, ok := p.it.current(); ok; current, ok = p.it.current() {
-		_ = current
+	for _, ok := p.it.current(); ok; _, ok = p.it.current() {
 
 		v, err := p.parseStatement()
 		if err != nil {
@@ -94,6 +32,7 @@ func (p *Parser) parseTerminatedExpression() (expression, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	current, ok := p.it.current()
 	if ok && checkTokenType(current, semicolon) {
 		p.it.consume()
@@ -129,15 +68,15 @@ func (p *Parser) parseLetStatement() (statement, error) {
 	}
 
 	name := current.lexeme
-	p.it.consume()
+	p.it.consume() // identifier
 	current, ok = p.it.current()
 	if !ok {
 		return nil, eofError()
 	} else if !checkToken(current, operator, "=") {
 		return nil, fmt.Errorf("assignment not found after let statement %v, line %d", current, current.line)
 	}
-	p.it.consume()
 
+	p.it.consume() // =
 	v, err := p.parseTerminatedExpression()
 	if err != nil {
 		return nil, err
@@ -262,16 +201,13 @@ func (p *Parser) parsePrimary() (expression, error) {
 		}
 
 		next, ok := p.it.current()
-		if ok && checkToken(next, closing, ")") {
+		if !ok {
+			return nil, eofError()
+		} else if checkToken(next, closing, ")") {
 			p.it.consume()
 			return ex, nil
-		} else {
-			if !ok {
-				return nil, eofError()
-			} else {
-				return nil, makeError(next, "unmatched ')'")
-			}
-		}
+		} 
+		return nil, makeError(next, "unmatched ')'")
 	} else if checkTokenType(current, number) || checkTokenType(current, boolean) || checkTokenType(current, stringLiteral) || checkTokenType(current, identifier) {
 		p.it.consume()
 		return literal(current), nil
