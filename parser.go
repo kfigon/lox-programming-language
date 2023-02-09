@@ -60,23 +60,19 @@ func (p *Parser) parseStatement() (statement, error) {
 
 func (p *Parser) parseLetStatement() (statement, error) {
 	p.it.consume() // let
-	current, ok := p.it.current()
-	if !ok {
-		return nil, eofError()
-	} else if !checkTokenType(current, identifier) {
-		return nil, fmt.Errorf("identifier not found after let statement %v, line %d", current, current.line)
+	if err := p.ensureCurrentTokenType(identifier); err != nil {
+		return nil, err
 	}
 
+	current, _ := p.it.current()
 	name := current.lexeme
 	p.it.consume() // identifier
-	current, ok = p.it.current()
-	if !ok {
-		return nil, eofError()
-	} else if !checkToken(current, operator, "=") {
-		return nil, fmt.Errorf("assignment not found after let statement %v, line %d", current, current.line)
+	
+	if err := p.ensureCurrentToken(operator, "="); err != nil {
+		return nil, err
 	}
-
 	p.it.consume() // =
+
 	v, err := p.parseTerminatedExpression()
 	if err != nil {
 		return nil, err
@@ -200,14 +196,11 @@ func (p *Parser) parsePrimary() (expression, error) {
 			return nil, err
 		}
 
-		next, ok := p.it.current()
-		if !ok {
-			return nil, eofError()
-		} else if checkToken(next, closing, ")") {
-			p.it.consume()
-			return ex, nil
-		} 
-		return nil, makeError(next, "unmatched ')'")
+		if err = p.ensureCurrentToken(closing, ")"); err != nil {
+			return nil ,err
+		}
+		p.it.consume()
+		return ex, nil
 	} else if checkTokenType(current, number) || checkTokenType(current, boolean) || checkTokenType(current, stringLiteral) || checkTokenType(current, identifier) {
 		p.it.consume()
 		return literal(current), nil
@@ -231,4 +224,24 @@ func (p *Parser) recover() {
 		}
 		p.it.consume()
 	}
+}
+
+func (p *Parser) ensureCurrentToken(tokType tokenType, lexeme string) error {
+	current, ok := p.it.current()
+	if !ok {
+		return eofError()
+	} else if !checkToken(current, tokType, lexeme) {
+		return makeError(current, fmt.Sprintf("expected %v", tokType))
+	}
+	return nil
+}
+
+func (p *Parser) ensureCurrentTokenType(tokType tokenType) error {
+	current, ok := p.it.current()
+	if !ok {
+		return eofError()
+	} else if !checkTokenType(current, tokType) {
+		return makeError(current, fmt.Sprintf("expected %v", tokType))
+	}
+	return nil
 }
