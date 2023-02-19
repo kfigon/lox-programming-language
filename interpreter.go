@@ -9,10 +9,14 @@ type loxObject struct {
 	v *any
 }
 
-type interpreter struct{}
+type interpreter struct{
+	env environment
+}
 
 func newInterpreter() *interpreter {
-	return &interpreter{}
+	return &interpreter{
+		env: environment{},
+	}
 }
 
 func interpret(stms []statement) error {
@@ -35,6 +39,7 @@ func (i *interpreter) visitStatementExpression(s statementExpression) error {
 func (i *interpreter) visitLetStatement(let letStatement) error {
 	v, err := let.expression.acceptExpr(i)
 	_ = v // todo
+	// todo: store in environment
 	return err
 }
 
@@ -54,6 +59,8 @@ func (i *interpreter) visitLiteral(li literal) (any, error) {
 			return nil, fmt.Errorf("invalid boolean %v, line %v, error: %w", li, li.line, err)
 		}
 		return toLoxObj(v), nil
+	} else if checkTokenType(tok, identifier) {
+		// todo: extract from environment
 	}
 	return nil, fmt.Errorf("invalid literal %v, line %v", li, li.line)
 }
