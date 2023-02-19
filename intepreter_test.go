@@ -149,6 +149,13 @@ func TestInvalidExpressions(t *testing.T) {
 
 		assert.Error(t, interpreterErrs)
 	})
+
+	t.Run("not declared variable assigned", func(t *testing.T) {
+		input := `foo = 4;`
+		interpreterErrs := perform(t, input)
+
+		assert.Error(t, interpreterErrs)
+	})
 }
 
 func TestInterpreterWithVariables(t *testing.T) {

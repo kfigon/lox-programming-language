@@ -37,10 +37,17 @@ func (i *interpreter) visitStatementExpression(s statementExpression) error {
 }
 
 func (i *interpreter) visitLetStatement(let letStatement) error {
-	return i.visitAssignmentStatement(let.assignmentStatement)
+	return i.doAssignment(let.assignmentStatement)
 }
 
 func (i *interpreter) visitAssignmentStatement(assign assignmentStatement) error {
+	if _, ok := i.env.get(assign.name); !ok {
+		return fmt.Errorf("unknown variable %v found during assignment", assign.name)
+	}
+	return i.doAssignment(assign)
+}
+
+func (i *interpreter) doAssignment(assign assignmentStatement) error {
 	v, err := assign.expression.acceptExpr(i)
 	if err != nil {
 		return err
