@@ -38,9 +38,24 @@ func (i *interpreter) visitStatementExpression(s statementExpression) error {
 
 func (i *interpreter) visitLetStatement(let letStatement) error {
 	v, err := let.expression.acceptExpr(i)
-	_ = v // todo
-	// todo: store in environment
-	return err
+	if err != nil {
+		return err
+	}
+
+	do := func(lo loxObject) error {
+		i.env[let.name] = lo
+		return nil
+	}
+
+	if boolExp, ok := canCast[bool](&v); ok {
+		return do(toLoxObj(boolExp))
+	} else if intExp, ok := canCast[int](&v); ok {
+		return do(toLoxObj(intExp))
+	} else if strExp, ok := canCast[string](&v); ok {
+		return do(toLoxObj(strExp))
+	}
+
+	return fmt.Errorf("unknown type of variable %v", let.name)
 }
 
 func (i *interpreter) visitLiteral(li literal) (any, error) {
@@ -60,7 +75,11 @@ func (i *interpreter) visitLiteral(li literal) (any, error) {
 		}
 		return toLoxObj(v), nil
 	} else if checkTokenType(tok, identifier) {
-		// todo: extract from environment
+		v, ok := i.env[tok.lexeme]
+		if !ok {
+			return nil, fmt.Errorf("unknown variable %v, line %v", tok.lexeme, li.line)
+		}
+		return v, nil
 	}
 	return nil, fmt.Errorf("invalid literal %v, line %v", li, li.line)
 }
@@ -160,14 +179,19 @@ func toLoxObj(v any) loxObject {
 }
 
 func castTo[T any](t token, v *any) (T, error) {
+	val, ok := canCast[T](v)
+	if !ok {
+		return val, fmt.Errorf("invalid lox type: %v value not found %v, line %v", t.tokType, t, t.line)
+	}
+	return val, nil
+}
+
+func canCast[T any](v *any) (T, bool) {
 	loxObj, ok := (*v).(loxObject)
 	if !ok {
 		var out T
-		return out, fmt.Errorf("invalid lox type: %v value not found %v, line %v", t.tokType, t, t.line)
+		return out, false
 	}
 	val, ok := (*loxObj.v).(T)
-	if !ok {
-		return val, fmt.Errorf("%v value not found %v, line %v", t.tokType, t, t.line)
-	}
-	return val, nil
+	return val, ok
 }

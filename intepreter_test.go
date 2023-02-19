@@ -111,16 +111,10 @@ func TestInterpretExpression(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			toks, err := lex(tC.input)
-			require.NoError(t, err, "got lexer error")
+			stmts := parseIt(t, tC.input)
+			require.Len(t, stmts, 1, "expect single statement")
 
-			p := NewParser(toks)
-			p.Parse()
-			smts, errs := p.Parse()
-			require.Empty(t, errs, "got parser errors")
-			require.Len(t, smts, 1, "expect single statement")
-
-			expStmt, ok := smts[0].(expression)
+			expStmt, ok := stmts[0].(expression)
 			require.True(t, ok, "single expression statement")
 
 			got, err := expStmt.acceptExpr(newInterpreter())
@@ -131,8 +125,7 @@ func TestInterpretExpression(t *testing.T) {
 }
 
 func TestInvalidExpressions(t *testing.T) {
-	t.Run("mismatched types", func(t *testing.T) {
-		input := `2 * (3 / -"muffin");`
+	perform := func(t *testing.T, input string) error {
 		toks, err := lex(input)
 		require.NoError(t, err, "got lexer error")
 
@@ -141,8 +134,36 @@ func TestInvalidExpressions(t *testing.T) {
 		exps, errs := p.Parse()
 		require.Empty(t, errs, "got parser errors")
 
-		interpreterErrs := interpret(exps)
+		return interpret(exps)
+	}
+	t.Run("mismatched types", func(t *testing.T) {
+		input := `2 * (3 / -"muffin");`
+		interpreterErrs := perform(t, input)
 
 		assert.Error(t, interpreterErrs)
+	})
+
+	t.Run("not declared variable used", func(t *testing.T) {
+		input := `2 + foob;`
+		interpreterErrs := perform(t, input)
+
+		assert.Error(t, interpreterErrs)
+	})
+}
+
+func TestInterpreterWithVariables(t *testing.T) {
+	t.Run("let and eval", func(t *testing.T) {
+		input := `let x = 4; 
+		5 + x;`
+		stmts := parseIt(t, input)
+		assert.Equal(t, []statement{
+			letStatement{"x", literal(token{number, "4", 1})},
+			statementExpression{binary{
+				op:    token{operator, "+", 2},
+				left:  literal(token{number, "5", 2}),
+				right: literal(token{identifier, "x", 2}),
+			},
+			},
+		}, stmts)
 	})
 }
