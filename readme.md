@@ -31,7 +31,12 @@ symbols:
 program        → statement* ;
 
 statement      → letDecl
+               | assignment
                | exprStmt ;
+
+letDecl        → "let" assignment
+assignment     → IDENTIFIER "=" exprStmt
+
 exprStmt       → expression ";" ;
 
 expression     → equality ;

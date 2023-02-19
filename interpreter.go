@@ -37,13 +37,17 @@ func (i *interpreter) visitStatementExpression(s statementExpression) error {
 }
 
 func (i *interpreter) visitLetStatement(let letStatement) error {
-	v, err := let.expression.acceptExpr(i)
+	return i.visitAssignmentStatement(let.assignmentStatement)
+}
+
+func (i *interpreter) visitAssignmentStatement(assign assignmentStatement) error {
+	v, err := assign.expression.acceptExpr(i)
 	if err != nil {
 		return err
 	}
 
 	do := func(lo loxObject) error {
-		i.env[let.name] = lo
+		i.env[assign.name] = lo
 		return nil
 	}
 
@@ -55,7 +59,7 @@ func (i *interpreter) visitLetStatement(let letStatement) error {
 		return do(toLoxObj(strExp))
 	}
 
-	return fmt.Errorf("unknown type of variable %v", let.name)
+	return fmt.Errorf("unknown type of variable %v", assign.name)
 }
 
 func (i *interpreter) visitLiteral(li literal) (any, error) {

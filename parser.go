@@ -49,6 +49,8 @@ func (p *Parser) parseStatement() (statement, error) {
 
 	if checkToken(current, keyword, "let") {
 		return p.parseLetStatement()
+	} else if checkTokenType(current, identifier) {
+		return p.parseAssignmentStatement()
 	}
 
 	v, err := p.parseTerminatedExpression()
@@ -64,20 +66,28 @@ func (p *Parser) parseLetStatement() (statement, error) {
 		return nil, err
 	}
 
+	assingnment,err := p.parseAssignmentStatement()
+	if err != nil {
+		return nil, err
+	}
+	return letStatement{assignmentStatement: assingnment}, nil
+}
+
+func (p *Parser) parseAssignmentStatement() (assignmentStatement, error) {
 	current, _ := p.it.current()
 	name := current.lexeme
 	p.it.consume() // identifier
 
 	if err := p.ensureCurrentToken(operator, "="); err != nil {
-		return nil, err
+		return assignmentStatement{}, err
 	}
 	p.it.consume() // =
 
 	v, err := p.parseTerminatedExpression()
 	if err != nil {
-		return nil, err
+		return assignmentStatement{}, err
 	} 
-	return letStatement{name, v}, nil
+	return assignmentStatement{name, v}, nil
 }
 
 func (p *Parser) parseExpression() (expression, error) {

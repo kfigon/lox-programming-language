@@ -157,7 +157,7 @@ func TestInterpreterWithVariables(t *testing.T) {
 		5 + x;`
 		stmts := parseIt(t, input)
 		assert.Equal(t, []statement{
-			letStatement{"x", literal(token{number, "4", 1})},
+			letStatement{assignmentStatement{"x", literal(token{number, "4", 1})}},
 			statementExpression{binary{
 				op:    token{operator, "+", 2},
 				left:  literal(token{number, "5", 2}),
