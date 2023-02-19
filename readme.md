@@ -50,3 +50,7 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")" 
                | IDENTIFIER ;
 ```
+
+some notes:
+* in C languages assignments are expessions, not statements, so we can do
+`newPoint(x + 2, 0).y = 3;`, but here it's a statement
