@@ -177,6 +177,66 @@ func TestInterpreterWithVariables(t *testing.T) {
 	})
 }
 
+func TestInterpreter(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		input    string
+		expected LoxObject
+	}{
+		{
+			desc:     "simple number declaration",
+			input:    `let result = 14;`,
+			expected: toLoxObj(14),
+		},
+		{
+			desc:     "simple string declaration",
+			input:    `let result = "foobar";`,
+			expected: toLoxObj("foobar"),
+		},
+		{
+			desc:     "arithmetic and boolean",
+			input:    `let x = 123;
+			let y = 5;
+			let result = (x + y) == 128;`,
+			expected: toLoxObj(true),
+		},
+		{
+			desc:     "arithmetic and boolean 2",
+			input:    `let x = 123;
+			let y = 6;
+			let result = (x + y) == 128;`,
+			expected: toLoxObj(false),
+		},
+		{
+			desc:     "arithmetic and boolean 3",
+			input:    `let x = 5;
+			let y = 6;
+			let result = (x + y)*3-1 == 32;`,
+			expected: toLoxObj(true),
+		},
+		{
+			desc:     "arithmetic and boolean 4",
+			input:    `let x = 5;
+			let y = 6;
+			let result = (x + y)*3-1 + 12;`,
+			expected: toLoxObj(44),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			statements := parseIt(t, tC.input)
+			in := NewInterpreter()
+			
+			for _, st := range statements {
+				err := st.AcceptStatement(in)
+				require.NoError(t, err)
+			}
+
+			assert.Equal(t, tC.expected, in.env["result"])
+		})
+	}
+}
+
 func parseIt(t *testing.T, input string) []parser.Statement {
 	toks, err := lexer.Lex(input)
 	require.NoError(t, err, "got lexer error")
