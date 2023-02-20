@@ -56,7 +56,7 @@ func (i *Interpreter) doAssignment(assign parser.AssignmentStatement) error {
 	}
 
 	do := func(lo LoxObject) error {
-		i.env[assign.Name] = lo
+		i.env.put(assign.Name, lo)
 		return nil
 	}
 
@@ -88,7 +88,7 @@ func (i *Interpreter) VisitLiteral(li parser.Literal) (any, error) {
 		}
 		return toLoxObj(v), nil
 	} else if lexer.CheckTokenType(tok, lexer.Identifier) {
-		v, ok := i.env[tok.Lexeme]
+		v, ok := i.env.get(tok.Lexeme)
 		if !ok {
 			return nil, fmt.Errorf("unknown variable %v, line %v", tok.Lexeme, li.Line)
 		}
