@@ -1,6 +1,8 @@
-package main
+package interpreter
 
 import (
+	"lox/lexer"
+	"lox/parser"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +13,7 @@ func TestInterpretExpression(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		input    string
-		expected loxObject
+		expected LoxObject
 	}{
 		{
 			desc:     "simple numeric literal",
@@ -114,10 +116,10 @@ func TestInterpretExpression(t *testing.T) {
 			stmts := parseIt(t, tC.input)
 			require.Len(t, stmts, 1, "expect single statement")
 
-			expStmt, ok := stmts[0].(expression)
+			expStmt, ok := stmts[0].(parser.Expression)
 			require.True(t, ok, "single expression statement")
 
-			got, err := expStmt.acceptExpr(newInterpreter())
+			got, err := expStmt.AcceptExpr(NewInterpreter())
 			require.NoError(t, err, "got intepreter error")
 			assert.Equal(t, tC.expected, got)
 		})
@@ -126,15 +128,15 @@ func TestInterpretExpression(t *testing.T) {
 
 func TestInvalidExpressions(t *testing.T) {
 	perform := func(t *testing.T, input string) error {
-		toks, err := lex(input)
+		toks, err := lexer.Lex(input)
 		require.NoError(t, err, "got lexer error")
 
-		p := NewParser(toks)
+		p := parser.NewParser(toks)
 		p.Parse()
 		exps, errs := p.Parse()
 		require.Empty(t, errs, "got parser errors")
 
-		return interpret(exps)
+		return Interpret(exps)
 	}
 	t.Run("mismatched types", func(t *testing.T) {
 		input := `2 * (3 / -"muffin");`
@@ -163,14 +165,26 @@ func TestInterpreterWithVariables(t *testing.T) {
 		input := `let x = 4; 
 		5 + x;`
 		stmts := parseIt(t, input)
-		assert.Equal(t, []statement{
-			letStatement{assignmentStatement{"x", literal(token{number, "4", 1})}},
-			statementExpression{binary{
-				op:    token{operator, "+", 2},
-				left:  literal(token{number, "5", 2}),
-				right: literal(token{identifier, "x", 2}),
+		assert.Equal(t, []parser.Statement{
+			parser.LetStatement{parser.AssignmentStatement{"x", parser.Literal(lexer.Token{lexer.Number, "4", 1})}},
+			parser.StatementExpression{parser.Binary{
+				Op:    lexer.Token{lexer.Operator, "+", 2},
+				Left:  parser.Literal(lexer.Token{lexer.Number, "5", 2}),
+				Right: parser.Literal(lexer.Token{lexer.Identifier, "x", 2}),
 			},
 			},
 		}, stmts)
 	})
+}
+
+func parseIt(t *testing.T, input string) []parser.Statement {
+	toks, err := lexer.Lex(input)
+	require.NoError(t, err, "got lexer error")
+
+	got, errs := parser.NewParser(toks).Parse()
+	require.Empty(t, errs, "got parser errors")
+	if len(errs) != 0 {
+		return nil
+	}
+	return got
 }

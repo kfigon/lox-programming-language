@@ -1,25 +1,26 @@
-package main
+package lexer
 
 import (
 	"fmt"
 	"unicode"
 )
 
-type tokenType int
+type TokenType int
+
 const (
-	opening tokenType = iota
-	closing
-	operator
-	number
-	boolean
-	keyword
-	identifier
-	stringLiteral
-	semicolon
+	Opening TokenType = iota
+	Closing
+	Operator
+	Number
+	Boolean
+	Keyword
+	Identifier
+	StringLiteral
+	Semicolon
 	null
 )
 
-func (t tokenType) String() string {
+func (t TokenType) String() string {
 	return [...]string{
 		"opening",
 		"closing",
@@ -34,30 +35,30 @@ func (t tokenType) String() string {
 	}[t]
 }
 
-type token struct {
-	tokType tokenType
-	lexeme  string
-	line int
+type Token struct {
+	TokType TokenType
+	Lexeme  string
+	Line    int
 }
 
-func (t token) String() string {
-	return fmt.Sprintf("(%v, %v)", t.tokType, t.lexeme)
+func (t Token) String() string {
+	return fmt.Sprintf("(%v, %v)", t.TokType, t.Lexeme)
 }
 
-func checkToken(tok token, tokType tokenType, lexeme string) bool {
-	return checkTokenType(tok, tokType) && tok.lexeme == lexeme
+func CheckToken(tok Token, tokType TokenType, lexeme string) bool {
+	return CheckTokenType(tok, tokType) && tok.Lexeme == lexeme
 }
 
-func checkTokenType(tok token, tokType tokenType) bool {
-	return tok.tokType == tokType
+func CheckTokenType(tok Token, tokType TokenType) bool {
+	return tok.TokType == tokType
 }
 
 func isKeyword(word string) bool {
 	return word == "let" || word == "while" || word == "return" || word == "else" || word == "if"
 }
 
-func lex(input string) ([]token, error) {
-	out := []token{}
+func Lex(input string) ([]Token, error) {
+	out := []Token{}
 	idx := 0
 	lineNumer := 1
 	peek := func() (rune, bool) {
@@ -74,49 +75,49 @@ func lex(input string) ([]token, error) {
 		return rune(input[idx]), true
 	}
 
-	addTok := func(tokTyp tokenType, lexeme string) {
-		out = append(out, token{tokType: tokTyp, lexeme: lexeme, line: lineNumer})
+	addTok := func(tokTyp TokenType, lexeme string) {
+		out = append(out, Token{TokType: tokTyp, Lexeme: lexeme, Line: lineNumer})
 	}
 
-	for current, ok := currentChar(); ok; current,ok = currentChar() {
+	for current, ok := currentChar(); ok; current, ok = currentChar() {
 		if unicode.IsSpace(current) {
 			if current == '\n' {
 				lineNumer++
 			}
 		} else if current == ')' || current == '}' {
-			addTok(closing, string(current))
+			addTok(Closing, string(current))
 		} else if current == ';' {
-			addTok(semicolon, string(current))
+			addTok(Semicolon, string(current))
 		} else if current == '(' || current == '{' {
-			addTok(opening, string(current))
+			addTok(Opening, string(current))
 		} else if current == '+' || current == '-' || current == '*' || current == '/' {
-			addTok(operator, string(current))
+			addTok(Operator, string(current))
 		} else if current == '!' || current == '<' || current == '>' || current == '=' {
 			if next, ok := peek(); ok && next == '=' {
 				idx++
-				addTok(operator, string(current)+"=")
+				addTok(Operator, string(current)+"=")
 			} else {
-				addTok(operator, string(current))
+				addTok(Operator, string(current))
 			}
 		} else if current == '|' || current == '&' {
 			if next, ok := peek(); ok && next == current {
 				idx++
-				addTok(operator, string(current) + string(next))
+				addTok(Operator, string(current)+string(next))
 			} else {
 				return nil, fmt.Errorf("invalid boolean operator on line %d", lineNumer)
 			}
 		} else if current == '"' {
 			idx++
-			word := readUntil(input, &idx, func(r rune) bool {return r != '"'})
+			word := readUntil(input, &idx, func(r rune) bool { return r != '"' })
 			if next, ok := peek(); ok && next == '"' {
 				idx++
-				addTok(stringLiteral, word)
+				addTok(StringLiteral, word)
 			} else {
 				return nil, fmt.Errorf("Invalid token at line %d: \"%s\"", lineNumer, word)
 			}
 		} else if unicode.IsDigit(current) {
 			num := readUntil(input, &idx, unicode.IsDigit)
-			addTok(number, num)
+			addTok(Number, num)
 		} else {
 			word := readUntil(input, &idx, unicode.IsLetter)
 			tokType := classifyWord(word)
@@ -127,21 +128,21 @@ func lex(input string) ([]token, error) {
 	return out, nil
 }
 
-func classifyWord(word string) tokenType {
+func classifyWord(word string) TokenType {
 	if isKeyword(word) {
-		return keyword
+		return Keyword
 	} else if word == "true" || word == "false" {
-		return boolean
+		return Boolean
 	} else if word == "null" {
 		return null
-	} 
-	return identifier
+	}
+	return Identifier
 }
 
-func readUntil(input string, idx *int, fn func(rune)bool) string {
+func readUntil(input string, idx *int, fn func(rune) bool) string {
 	out := ""
 	out += string(input[*idx])
-	for *idx +1 < len(input) {
+	for *idx+1 < len(input) {
 		next := input[*idx+1]
 		if fn(rune(next)) {
 			*idx++

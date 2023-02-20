@@ -1,5 +1,4 @@
-package main
-
+package parser
 
 type iter[T any] struct {
 	arr []T

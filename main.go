@@ -3,6 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"lox/interpreter"
+	"lox/lexer"
+	"lox/parser"
 	"os"
 	"strings"
 )
@@ -23,7 +26,7 @@ func fileMode(fileName string) {
 		fmt.Printf("Cant open file %v: %v\n", fileName, err)
 		return
 	}
-	t, err := lex(string(b))
+	t, err := lexer.Lex(string(b))
 	if err != nil {
 		fmt.Println("Got error:", err)
 		return
@@ -45,19 +48,19 @@ func interpreterMode() {
 			fmt.Println("Bye")
 			return
 		} else if line != "" {
-			t, err := lex(line)
+			t, err := lexer.Lex(line)
 			if err != nil {
 				fmt.Println("got lexer error: ", err)
 				continue
 			}
-			exp, errs := NewParser(t).Parse()
+			exp, errs := parser.NewParser(t).Parse()
 			if len(errs) > 0 {
 				fmt.Println("got parser errors: ", errs)
 				continue
-			}			
-			err = interpret(exp)
+			}
+			err = interpreter.Interpret(exp)
 			if err != nil {
-				fmt.Println("got interpreter error:",err)
+				fmt.Println("got interpreter error:", err)
 				continue
 			}
 			// for _,v := range got {
