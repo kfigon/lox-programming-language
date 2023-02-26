@@ -71,3 +71,17 @@ type AssignmentStatement struct {
 func (a AssignmentStatement) AcceptStatement(v VisitorStatement) error {
 	return v.VisitAssignmentStatement(a)
 }
+
+
+type BlockStatement struct {
+	Stmts []Statement
+}
+
+func (b BlockStatement) AcceptStatement(v VisitorStatement) error {
+	for _, s := range b.Stmts {
+		if err := s.AcceptStatement(v); err != nil {
+			return err
+		}
+	}
+	return nil
+}

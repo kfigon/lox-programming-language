@@ -32,8 +32,10 @@ program        → statement* ;
 
 statement      → letDecl
                | assignment
+               | block
                | exprStmt ;
 
+block          → "{" statement* "}" ;
 letDecl        → "let" assignment
 assignment     → IDENTIFIER "=" exprStmt
 

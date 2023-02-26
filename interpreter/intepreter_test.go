@@ -221,6 +221,12 @@ func TestInterpreter(t *testing.T) {
 			let result = (x + y)*3-1 + 12;`,
 			expected: toLoxObj(44),
 		},
+		{
+			desc:     "assignment",
+			input:    `let result = 3;
+			result = result + 4;`,
+			expected: toLoxObj(7),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

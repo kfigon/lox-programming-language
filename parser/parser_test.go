@@ -174,6 +174,25 @@ func TestStatements(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc:  "block statement",
+			input: `let foo = 123;
+			{
+				foo = 4;
+				foo = 18;
+			}`,
+			expected: []Statement{
+				LetStatement{
+					AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "123", 1})},
+				},
+				BlockStatement{
+					[]Statement{
+						AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "18", 4})},
+						AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "4", 3})},
+					},
+				},
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
