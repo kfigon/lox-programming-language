@@ -12,12 +12,12 @@ type LoxObject struct {
 }
 
 type Interpreter struct {
-	env environment
+	env *environment
 }
 
 func NewInterpreter() *Interpreter {
 	return &Interpreter{
-		env: environment{},
+		env: newEnv(),
 	}
 }
 
@@ -39,33 +39,30 @@ func (i *Interpreter) VisitStatementExpression(s parser.StatementExpression) err
 }
 
 func (i *Interpreter) VisitLetStatement(let parser.LetStatement) error {
-	return i.doAssignment(let.AssignmentStatement)
+	return i.doAssignment(let.AssignmentStatement, func(name string, lo LoxObject) error {
+		i.env.create(name, lo)
+		return nil
+	})
 }
 
 func (i *Interpreter) VisitAssignmentStatement(assign parser.AssignmentStatement) error {
-	if _, ok := i.env.get(assign.Name); !ok {
-		return fmt.Errorf("unknown variable %v found during assignment", assign.Name)
-	}
-	return i.doAssignment(assign)
+	return i.doAssignment(assign, func(name string, lo LoxObject) error {
+		return i.env.put(name, lo)
+	})
 }
 
-func (i *Interpreter) doAssignment(assign parser.AssignmentStatement) error {
+func (i *Interpreter) doAssignment(assign parser.AssignmentStatement, do func(string, LoxObject) error) error {
 	v, err := assign.Expression.AcceptExpr(i)
 	if err != nil {
 		return err
 	}
 
-	do := func(lo LoxObject) error {
-		i.env.put(assign.Name, lo)
-		return nil
-	}
-
 	if boolExp, ok := canCast[bool](&v); ok {
-		return do(toLoxObj(boolExp))
+		return do(assign.Name, toLoxObj(boolExp))
 	} else if intExp, ok := canCast[int](&v); ok {
-		return do(toLoxObj(intExp))
+		return do(assign.Name, toLoxObj(intExp))
 	} else if strExp, ok := canCast[string](&v); ok {
-		return do(toLoxObj(strExp))
+		return do(assign.Name, toLoxObj(strExp))
 	}
 
 	return fmt.Errorf("unknown type of variable %v", assign.Name)
@@ -185,6 +182,25 @@ func (i *Interpreter) VisitBinary(b parser.Binary) (any, error) {
 		return nil, fmt.Errorf("unsupported binary operator on int %v, line %v", b.Op, b.Op.Line)
 	}
 	return nil, fmt.Errorf("unsupported binary operator, unknown type %v, line %v", b.Op, b.Op.Line)
+}
+
+func (i *Interpreter) VisitBlockStatement(b parser.BlockStatement) error {
+	previous := i.env
+	defer func (){
+		i.env = previous
+	}()
+
+	scopeEnv := newEnv()
+	scopeEnv.enclosing = previous
+	i.env = scopeEnv
+
+	for _, s := range b.Stmts {
+		if err := s.AcceptStatement(i); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func toLoxObj(v any) LoxObject {

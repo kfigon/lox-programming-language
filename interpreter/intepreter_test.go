@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"fmt"
 	"lox/lexer"
 	"lox/parser"
 	"testing"
@@ -232,15 +233,40 @@ func TestInterpreter(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			statements := parseIt(t, tC.input)
 			in := NewInterpreter()
-			
-			for _, st := range statements {
-				err := st.AcceptStatement(in)
-				require.NoError(t, err)
-			}
 
-			assert.Equal(t, tC.expected, in.env["result"])
+			execute(t, in, statements)
+
+			assertVariable(t, tC.expected, "result", in)
 		})
 	}
+}
+
+func TestScoping(t *testing.T) {
+	t.Run("inner variables are not visible", func(t *testing.T) {
+		input := `let foo = 4;
+		{
+			let bar = 123;
+			foo = bar;
+		}`
+		statements := parseIt(t, input)
+		in := NewInterpreter()
+
+		execute(t, in, statements)
+
+		assertVariable(t, toLoxObj(123), "foo", in)
+		assertVariableNotFound(t, "bar", in)
+	})
+}
+
+func assertVariable[T any](t *testing.T, exp T, name string, i *Interpreter) {
+	v, ok := i.env.get(name)
+	require.True(t, ok, fmt.Sprintf("%v variable not found", name))
+	assert.Equal(t, exp, v)
+}
+
+func assertVariableNotFound(t *testing.T, name string, i *Interpreter) {
+	v, ok := i.env.get(name)
+	assert.False(t, ok, fmt.Sprintf("%v variable found, but not expected, v: %v", name, v))
 }
 
 func parseIt(t *testing.T, input string) []parser.Statement {
@@ -253,4 +279,11 @@ func parseIt(t *testing.T, input string) []parser.Statement {
 		return nil
 	}
 	return got
+}
+
+func execute(t *testing.T, in *Interpreter, stmts []parser.Statement) {
+	for _, st := range stmts {
+		err := st.AcceptStatement(in)
+		require.NoError(t, err)
+	}
 }

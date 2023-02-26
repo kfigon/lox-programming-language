@@ -45,6 +45,7 @@ type VisitorStatement interface {
 	VisitStatementExpression(StatementExpression) error
 	VisitLetStatement(LetStatement) error
 	VisitAssignmentStatement(AssignmentStatement) error
+	VisitBlockStatement(BlockStatement) error
 }
 
 type StatementExpression struct {
@@ -78,10 +79,5 @@ type BlockStatement struct {
 }
 
 func (b BlockStatement) AcceptStatement(v VisitorStatement) error {
-	for _, s := range b.Stmts {
-		if err := s.AcceptStatement(v); err != nil {
-			return err
-		}
-	}
-	return nil
+	return v.VisitBlockStatement(b)
 }
