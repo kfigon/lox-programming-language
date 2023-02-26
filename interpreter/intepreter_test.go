@@ -247,13 +247,14 @@ func TestScoping(t *testing.T) {
 		{
 			let bar = 123;
 			foo = bar;
-		}`
+		}
+		foo = foo + 1;`
 		statements := parseIt(t, input)
 		in := NewInterpreter()
 
 		execute(t, in, statements)
 
-		assertVariable(t, toLoxObj(123), "foo", in)
+		assertVariable(t, toLoxObj(124), "foo", in)
 		assertVariableNotFound(t, "bar", in)
 	})
 }
