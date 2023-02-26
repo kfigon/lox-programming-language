@@ -41,7 +41,7 @@ func (p *Parser) parseTerminatedExpression() (Expression, error) {
 		p.it.consume()
 		return v, nil
 	}
-	return nil, fmt.Errorf("unterminated statement at line %d", current.Line)
+	return nil, makeError(current, "unterminated statement")
 }
 
 func (p *Parser) parseStatement() (Statement, error) {
@@ -75,14 +75,15 @@ func (p *Parser) parseBlockStatement() (BlockStatement, error) {
 		} else if lexer.CheckToken(current, lexer.Closing, "}") {
 			p.it.consume() // }
 			return BlockStatement{statements}, nil
-		} 
+		}
+		
 		stms, err := p.parseStatement()
 		if err != nil {
-			return BlockStatement{}, fmt.Errorf("error parsing block statement at line %v: %w", current.Line, err)
+			return BlockStatement{}, fmt.Errorf("error parsing block statement: %w", err)
 		}
 		statements = append(statements, stms)
 	}
-	return BlockStatement{}, fmt.Errorf("Invalid block statement")
+	return BlockStatement{}, fmt.Errorf("invalid block statement")
 }
 
 func (p *Parser) parseLetStatement() (Statement, error) {
