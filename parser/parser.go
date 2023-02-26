@@ -54,6 +54,8 @@ func (p *Parser) parseStatement() (Statement, error) {
 		return p.parseLetStatement()
 	} else if lexer.CheckTokenType(current, lexer.Identifier) {
 		return p.parseAssignmentStatement()
+	} else if lexer.CheckToken(current, lexer.Opening, "{") {
+		return p.parseBlockStatement()
 	}
 
 	v, err := p.parseTerminatedExpression()
@@ -61,6 +63,26 @@ func (p *Parser) parseStatement() (Statement, error) {
 		return nil, err
 	}
 	return StatementExpression{v}, nil
+}
+
+func (p *Parser) parseBlockStatement() (BlockStatement, error) {
+	p.it.consume() // {
+	statements := []Statement{}
+	for {
+		current, ok := p.it.current()
+		if !ok {
+			return BlockStatement{}, eofError()
+		} else if lexer.CheckToken(current, lexer.Closing, "}") {
+			p.it.consume() // }
+			return BlockStatement{statements}, nil
+		} 
+		stms, err := p.parseStatement()
+		if err != nil {
+			return BlockStatement{}, fmt.Errorf("error parsing block statement at line %v: %w", current.Line, err)
+		}
+		statements = append(statements, stms)
+	}
+	return BlockStatement{}, fmt.Errorf("Invalid block statement")
 }
 
 func (p *Parser) parseLetStatement() (Statement, error) {

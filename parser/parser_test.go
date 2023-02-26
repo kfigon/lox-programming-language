@@ -180,17 +180,19 @@ func TestStatements(t *testing.T) {
 			{
 				foo = 4;
 				foo = 18;
-			}`,
+			}
+			x = true;`,
 			expected: []Statement{
 				LetStatement{
 					AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "123", 1})},
 				},
 				BlockStatement{
 					[]Statement{
-						AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "18", 4})},
 						AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "4", 3})},
+						AssignmentStatement{ "foo", Literal(lexer.Token{lexer.Number, "18", 4})},
 					},
 				},
+				AssignmentStatement{"x", Literal(lexer.Token{lexer.Boolean, "true", 6})},
 			},
 		},
 	}
