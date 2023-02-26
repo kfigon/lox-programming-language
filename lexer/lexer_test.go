@@ -112,6 +112,6 @@ func TestInvalidInput(t *testing.T) {
 
 		_, err := Lex(input)
 		assert.Error(t, err)
-		assert.Equal(t, "Invalid token at line 1: \" hello world \"", err.Error())
+		assert.Equal(t, "invalid token at line 1: \" hello world \"", err.Error())
 	})
 }

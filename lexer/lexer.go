@@ -90,7 +90,7 @@ func Lex(input string) ([]Token, error) {
 			addTok(Semicolon, string(current))
 		} else if current == '(' || current == '{' {
 			addTok(Opening, string(current))
-		} else if current == '+' || current == '-' || current == '*' || current == '/' {
+		} else if current == '+' || current == '-' || current == '*' || current == '/' || current == '%' {
 			addTok(Operator, string(current))
 		} else if current == '!' || current == '<' || current == '>' || current == '=' {
 			if next, ok := peek(); ok && next == '=' {
@@ -113,7 +113,7 @@ func Lex(input string) ([]Token, error) {
 				idx++
 				addTok(StringLiteral, word)
 			} else {
-				return nil, fmt.Errorf("Invalid token at line %d: \"%s\"", lineNumer, word)
+				return nil, fmt.Errorf("invalid token at line %d: \"%s\"", lineNumer, word)
 			}
 		} else if unicode.IsDigit(current) {
 			num := readUntil(input, &idx, unicode.IsDigit)

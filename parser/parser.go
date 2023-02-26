@@ -192,7 +192,7 @@ func (p *Parser) parseFactor() (Expression, error) {
 	}
 	for {
 		current, ok := p.it.current()
-		if ok && (lexer.CheckToken(current, lexer.Operator, "/") || lexer.CheckToken(current, lexer.Operator, "*")) {
+		if ok && (lexer.CheckToken(current, lexer.Operator, "/") || lexer.CheckToken(current, lexer.Operator, "*") || lexer.CheckToken(current, lexer.Operator, "%")) {
 			p.it.consume()
 			e, err := p.parseUnary()
 			if err != nil {

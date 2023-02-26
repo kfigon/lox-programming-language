@@ -166,6 +166,8 @@ func (i *Interpreter) VisitBinary(b parser.Binary) (any, error) {
 			return toLoxObj(leftI * rightI), nil
 		case "/":
 			return toLoxObj(leftI / rightI), nil
+		case "%":
+			return toLoxObj(leftI % rightI), nil
 		case ">":
 			return toLoxObj(leftI > rightI), nil
 		case ">=":

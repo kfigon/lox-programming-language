@@ -111,6 +111,16 @@ func TestInterpretExpression(t *testing.T) {
 			input:    `"foo" + "bar";`,
 			expected: toLoxObj("foobar"),
 		},
+		{
+			desc:     "modulo",
+			input:    `15 % 3;`,
+			expected: toLoxObj(15 % 3),
+		},
+		{
+			desc:     "modulo 2",
+			input:    `15 % 2;`,
+			expected: toLoxObj(15 % 2),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
