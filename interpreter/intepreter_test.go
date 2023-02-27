@@ -238,6 +238,37 @@ func TestInterpreter(t *testing.T) {
 			result = result + 4;`,
 			expected: toLoxObj(7),
 		},
+		{
+			desc:     "if",
+			input:    `let result = 0;
+			let x = 1;
+			if (x == 1) {result = 1; }`,
+			expected: toLoxObj(1),
+		},
+		{
+			desc:     "if not executed",
+			input:    `let result = -1;
+			let x = 0;
+			if (x == 1) {result = 1; }`,
+			expected: toLoxObj(-1),
+		},
+		{
+			desc:     "else",
+			input:    `let result = 0;
+			let x = 0;
+			if (x == 1) {result = 1; }
+			else {result=2;}`,
+			expected: toLoxObj(2),
+		},
+		{
+			desc:     "if else",
+			input:    `let result = 0;
+			let x = 2;
+			if (x == 1) {result = 1; }
+			else if (x == 2) {result = 2;}
+			else { result=3; }`,
+			expected: toLoxObj(2),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

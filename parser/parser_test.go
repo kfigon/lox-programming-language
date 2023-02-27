@@ -195,6 +195,150 @@ func TestStatements(t *testing.T) {
 				AssignmentStatement{"x", Literal(lexer.Token{lexer.Boolean, "true", 6})},
 			},
 		},
+		{
+			desc:  "single if",
+			input: `if(foo == 123) {
+				foo = 18;
+			}`,
+			expected: []Statement{
+				IfStatement{
+					Ifs: []IfBlock{
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "==", 1},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 1}),
+								Right: Literal(lexer.Token{lexer.Number, "123", 1}),
+							}, 
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "18", 2})},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			desc:  "else",
+			input: `if(foo == 123) {
+				foo = 18;
+			} else {
+				foo = 2;
+			}`,
+			expected: []Statement{
+				IfStatement{
+					Ifs: []IfBlock{
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "==", 1},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 1}),
+								Right: Literal(lexer.Token{lexer.Number, "123", 1}),
+							}, 
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "18", 2})},
+								},
+							},
+						},
+						{
+							Predicate: Literal(lexer.Token{lexer.Boolean, "true", 3}),
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "2", 4})},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			desc:  "else if",
+			input: `if(foo == 123) {
+				foo = 18;
+			} else if (foo < 3) {
+				foo = 2;
+			}`,
+			expected: []Statement{
+				IfStatement{
+					Ifs: []IfBlock{
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "==", 1},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 1}),
+								Right: Literal(lexer.Token{lexer.Number, "123", 1}),
+							}, 
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "18", 2})},
+								},
+							},
+						},
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "<", 1},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 3}),
+								Right: Literal(lexer.Token{lexer.Number, "3", 3}),
+							}, 
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "2", 4})},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			desc:  "else ifs",
+			input: `if(foo == 123) {
+				foo = 18;
+			} else if (foo < 3) {
+				foo = 2;
+			} else {
+				foo = 1
+			}`,
+			expected: []Statement{
+				IfStatement{
+					Ifs: []IfBlock{
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "==", 1},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 1}),
+								Right: Literal(lexer.Token{lexer.Number, "123", 1}),
+							}, 
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "18", 2})},
+								},
+							},
+						},
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "<", 1},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 3}),
+								Right: Literal(lexer.Token{lexer.Number, "3", 3}),
+							}, 
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "2", 4})},
+								},
+							},
+						},
+						{
+							Predicate: Literal(lexer.Token{lexer.Boolean, "true", 5}),
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"foo", Literal(lexer.Token{lexer.Number, "1", 6})},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
