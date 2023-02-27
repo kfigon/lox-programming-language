@@ -195,7 +195,10 @@ func (p *Parser) parseEquality() (Expression, error) {
 	}
 	for {
 		current, ok := p.it.current()
-		if ok && (lexer.CheckToken(current, lexer.Operator, "!=") || lexer.CheckToken(current, lexer.Operator, "==")) {
+		if ok && (lexer.CheckToken(current, lexer.Operator, "!=") || 
+				lexer.CheckToken(current, lexer.Operator, "==") ||
+				lexer.CheckToken(current, lexer.Operator, "&&") ||
+				lexer.CheckToken(current, lexer.Operator, "||")) {
 			p.it.consume()
 			e, err := p.parseComparison()
 			if err != nil {

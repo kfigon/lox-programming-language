@@ -132,6 +132,10 @@ func (i *Interpreter) VisitBinary(b parser.Binary) (any, error) {
 			return toLoxObj(leftBool != rightBool), nil
 		case "==":
 			return toLoxObj(leftBool == rightBool), nil
+		case "||":
+			return toLoxObj(leftBool || rightBool), nil
+		case "&&": 
+			return toLoxObj(leftBool && rightBool), nil
 		}
 		return nil, fmt.Errorf("unsupported binary operator boolean strings %v, line %v", b.Op, b.Op.Line)
 	}
@@ -207,7 +211,7 @@ func (i *Interpreter) VisitIfStatement(ifStmt parser.IfStatement) error {
 		if err != nil {
 			return fmt.Errorf("error during evaluating if predicate: %w", err)
 		}
-		
+
 		boolExp, ok := canCast[bool](&v)
 		if !ok {
 			return fmt.Errorf("non boolean expression in if statement")

@@ -269,6 +269,27 @@ func TestInterpreter(t *testing.T) {
 			else { result=3; }`,
 			expected: toLoxObj(2),
 		},
+		{
+			desc:     "if with logic operators",
+			input:    `let result = 0;
+			let x = 2;
+			if (x == 1 || true) {result = 1; }`,
+			expected: toLoxObj(1),
+		},
+		{
+			desc:     "if with logic operators",
+			input:    `let result = 0;
+			let x = 2;
+			if (x == 2 && !false) {result = 1; }`,
+			expected: toLoxObj(1),
+		},
+		{
+			desc:     "if with logic operators",
+			input:    `let result = -2;
+			let x = 2;
+			if (x == 2 && false) {result = 1; }`,
+			expected: toLoxObj(-2),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
