@@ -56,6 +56,8 @@ func (p *Parser) parseStatement() (Statement, error) {
 		return p.parseAssignmentStatement()
 	} else if lexer.CheckToken(current, lexer.Opening, "{") {
 		return p.parseBlockStatement()
+	} else if lexer.CheckToken(current, lexer.Keyword, "if") {
+		return p.parseIfStatement()
 	}
 
 	v, err := p.parseTerminatedExpression()
@@ -84,6 +86,16 @@ func (p *Parser) parseBlockStatement() (BlockStatement, error) {
 		statements = append(statements, stms)
 	}
 	return BlockStatement{}, fmt.Errorf("invalid block statement")
+}
+
+func (p *Parser) parseIfStatement() (IfStatement, error) {
+	// p.it.consume() // if
+	// if err := p.ensureCurrentToken(lexer.Opening, "("); err != nil {
+		// return IfStatement{}, err
+	// }
+	// expr, err := p.parseExpression()
+	
+	return IfStatement{}, nil
 }
 
 func (p *Parser) parseLetStatement() (Statement, error) {

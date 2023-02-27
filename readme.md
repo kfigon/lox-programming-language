@@ -33,11 +33,16 @@ program        → statement* ;
 statement      → letDecl
                | assignment
                | block
-               | exprStmt ;
+               | exprStmt 
+               | ifStmt;
 
 block          → "{" statement* "}" ;
 letDecl        → "let" assignment
 assignment     → IDENTIFIER "=" exprStmt
+
+ifStmt         → "if" "(" expression ")" block
+                 ( "else" ifStmt )* 
+                 ( "else" block )?;
 
 exprStmt       → expression ";" ;
 
