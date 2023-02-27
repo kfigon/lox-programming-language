@@ -277,7 +277,7 @@ func TestStatements(t *testing.T) {
 						},
 						{
 							Predicate: Binary{
-								Op: lexer.Token{lexer.Operator, "<", 1},
+								Op: lexer.Token{lexer.Operator, "<", 3},
 								Left: Literal(lexer.Token{lexer.Identifier, "foo", 3}),
 								Right: Literal(lexer.Token{lexer.Number, "3", 3}),
 							}, 
@@ -298,7 +298,7 @@ func TestStatements(t *testing.T) {
 			} else if (foo < 3) {
 				foo = 2;
 			} else {
-				foo = 1
+				foo = 1;
 			}`,
 			expected: []Statement{
 				IfStatement{
@@ -317,7 +317,7 @@ func TestStatements(t *testing.T) {
 						},
 						{
 							Predicate: Binary{
-								Op: lexer.Token{lexer.Operator, "<", 1},
+								Op: lexer.Token{lexer.Operator, "<", 3},
 								Left: Literal(lexer.Token{lexer.Identifier, "foo", 3}),
 								Right: Literal(lexer.Token{lexer.Number, "3", 3}),
 							}, 

@@ -89,13 +89,69 @@ func (p *Parser) parseBlockStatement() (BlockStatement, error) {
 }
 
 func (p *Parser) parseIfStatement() (IfStatement, error) {
-	// p.it.consume() // if
-	// if err := p.ensureCurrentToken(lexer.Opening, "("); err != nil {
-		// return IfStatement{}, err
-	// }
-	// expr, err := p.parseExpression()
+	parseSingleIf := func() (IfBlock, error) {
+		p.it.consume() // if
+		
+		if err := p.ensureCurrentToken(lexer.Opening, "("); err != nil {
+			return IfBlock{}, fmt.Errorf("if statement syntax error: %w", err)
+		}
+		p.it.consume() // )
+
+		firstExpr, err := p.parseExpression()
+		if err != nil {
+			return IfBlock{}, fmt.Errorf("if statement syntax error during parsing expression: %w", err)
+		} 
+		
+		if err := p.ensureCurrentToken(lexer.Closing, ")"); err != nil {
+			return IfBlock{}, fmt.Errorf("if statement syntax error: %w", err)
+		}
+		p.it.consume() // )
+
+		if err := p.ensureCurrentToken(lexer.Opening, "{"); err != nil {
+			return IfBlock{}, fmt.Errorf("if statement syntax error: %w", err)
+		}
+		block, err := p.parseBlockStatement()
+		if err != nil {
+			return IfBlock{}, fmt.Errorf("if statement syntax error (block): %w", err)
+		}
+		return IfBlock{Predicate: firstExpr, Body: block}, nil
+	}
+
+	first, err := parseSingleIf()
+	if err != nil {
+		return IfStatement{}, err
+	}
 	
-	return IfStatement{}, nil
+	ifs := []IfBlock{
+		first,
+	}
+	for {
+		current, ok := p.it.current()
+		next, nextOk := p.it.peek()
+		if !ok {
+			return IfStatement{ifs}, nil
+		}
+
+		if lexer.CheckToken(current, lexer.Keyword, "else") && nextOk && lexer.CheckToken(next, lexer.Keyword, "if") {
+			p.it.consume() // else
+			ifStmt, err := parseSingleIf()
+			if err != nil {
+				return IfStatement{}, fmt.Errorf("else if statement syntax error: %w", err)
+			}
+			ifs = append(ifs, ifStmt)
+		} else if lexer.CheckToken(current, lexer.Keyword, "else") && nextOk && lexer.CheckToken(next, lexer.Opening, "{") {
+			line := current.Line
+			p.it.consume() // else
+			block, err := p.parseBlockStatement()
+			if err != nil {
+				return IfStatement{}, fmt.Errorf("else statement syntax error (block): %w", err)
+			}
+			ifs = append(ifs, IfBlock{Predicate: Literal(lexer.Token{lexer.Boolean, "true", line}), Body: block})
+			return IfStatement{ifs}, nil
+		} else {
+			return IfStatement{ifs}, nil
+		}
+	}
 }
 
 func (p *Parser) parseLetStatement() (Statement, error) {
