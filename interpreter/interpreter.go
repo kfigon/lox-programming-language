@@ -202,6 +202,18 @@ func (i *Interpreter) VisitBlockStatement(b parser.BlockStatement) error {
 }
 
 func (i *Interpreter) VisitIfStatement(ifStmt parser.IfStatement) error {
-	// todo
+	for _, ifEl := range ifStmt.Ifs {
+		v, err := ifEl.Predicate.AcceptExpr(i)
+		if err != nil {
+			return fmt.Errorf("error during evaluating if predicate: %w", err)
+		}
+		
+		boolExp, ok := canCast[bool](&v)
+		if !ok {
+			return fmt.Errorf("non boolean expression in if statement")
+		} else if boolExp {
+			return ifEl.Body.AcceptStatement(i)
+		}
+	}
 	return nil
 }
