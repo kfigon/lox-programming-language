@@ -47,10 +47,10 @@ ifStmt         → "if" "(" expression ")" block
 exprStmt       → expression ";" ;
 
 expression     → equality ;
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+equality       → comparison ( ( "!=" | "==" | "||" | "&&" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
-factor         → unary ( ( "/" | "*" ) unary )* ;
+factor         → unary ( ( "/" | "*" | "%" ) unary )* ;
 unary          → ( "!" | "-" ) unary
                | primary ;
 primary        → NUMBER | STRING | "true" | "false" | "nil"
