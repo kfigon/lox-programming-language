@@ -41,7 +41,7 @@ letDecl        → "let" assignment
 assignment     → IDENTIFIER "=" exprStmt
 
 ifStmt         → "if" "(" expression ")" block
-                 ( "else" ifStmt )* 
+                 ( "else" "if" "(" expression ")" block )* 
                  ( "else" block )?;
 
 exprStmt       → expression ";" ;
