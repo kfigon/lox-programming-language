@@ -358,7 +358,12 @@ func (p *Parser) recover() {
 		if lexer.CheckTokenType(current, lexer.Semicolon) {
 			p.it.consume()
 			break
+		} else if lexer.CheckToken(current, lexer.Keyword, "let") || 
+			lexer.CheckToken(current, lexer.Keyword, "function") ||
+			lexer.CheckToken(current, lexer.Keyword, "while") {
+			break
 		}
+
 		p.it.consume()
 	}
 }
