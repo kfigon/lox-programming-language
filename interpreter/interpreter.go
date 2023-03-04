@@ -116,15 +116,27 @@ func (i *Interpreter) VisitUnary(u parser.Unary) (any, error) {
 
 func (i *Interpreter) VisitBinary(b parser.Binary) (any, error) {
 	leftV, leftErr := b.Left.AcceptExpr(i)
-	rightV, rightErr := b.Right.AcceptExpr(i)
-
 	if leftErr != nil {
 		return nil, leftErr
-	} else if rightErr != nil {
+	}
+
+	// short curcuit optimisation
+	if b.Op.Lexeme == "||" || b.Op.Lexeme == "&&" {
+		leftBool, leftErr := castTo[bool](b.Op, &leftV)
+		if leftErr == nil {
+			if b.Op.Lexeme == "||" && leftBool {
+				return toLoxObj(true), nil
+			} else if b.Op.Lexeme == "&&" && !leftBool {
+				return toLoxObj(false), nil
+			}
+		}
+	}
+
+	rightV, rightErr := b.Right.AcceptExpr(i)
+ 	if rightErr != nil {
 		return nil, rightErr
 	}
 
-	// todo: short circuit might be a nice feature
 	leftBool, leftErr := castTo[bool](b.Op, &leftV)
 	rightBool, rightErr := castTo[bool](b.Op, &rightV)
 	if leftErr == nil && rightErr == nil {
@@ -234,7 +246,7 @@ func (i *Interpreter) VisitWhileStatement(whileStmt parser.WhileStatement) error
 		if !ok {
 			return fmt.Errorf("non boolean expression in while statement")
 		}
-		
+
 		if !boolExp {
 			break
 		}
