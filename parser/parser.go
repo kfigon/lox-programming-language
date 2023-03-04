@@ -58,6 +58,8 @@ func (p *Parser) parseStatement() (Statement, error) {
 		return p.parseBlockStatement()
 	} else if lexer.CheckToken(current, lexer.Keyword, "if") {
 		return p.parseIfStatement()
+	} else if lexer.CheckToken(current, lexer.Keyword, "while") {
+		return p.parseWhileStatement()
 	}
 
 	v, err := p.parseTerminatedExpression()
@@ -86,6 +88,34 @@ func (p *Parser) parseBlockStatement() (BlockStatement, error) {
 		statements = append(statements, stms)
 	}
 	return BlockStatement{}, fmt.Errorf("invalid block statement")
+}
+
+func (p *Parser) parseWhileStatement() (WhileStatement, error) {
+	p.it.consume() // while
+	
+	if err := p.ensureCurrentToken(lexer.Opening, "("); err != nil {
+		return WhileStatement{}, fmt.Errorf("while statement syntax error: %w", err)
+	}
+	p.it.consume() // )
+
+	pred, err := p.parseExpression()
+	if err != nil {
+		return WhileStatement{}, fmt.Errorf("while statement syntax error during parsing expression: %w", err)
+	} 
+	
+	if err := p.ensureCurrentToken(lexer.Closing, ")"); err != nil {
+		return WhileStatement{}, fmt.Errorf("while statement syntax error: %w", err)
+	}
+	p.it.consume() // )
+
+	if err := p.ensureCurrentToken(lexer.Opening, "{"); err != nil {
+		return WhileStatement{}, fmt.Errorf("while statement syntax error: %w", err)
+	}
+	block, err := p.parseBlockStatement()
+	if err != nil {
+		return WhileStatement{}, fmt.Errorf("while statement syntax error (block): %w", err)
+	}
+	return WhileStatement{Predicate: pred, Body: block}, nil
 }
 
 func (p *Parser) parseIfStatement() (IfStatement, error) {

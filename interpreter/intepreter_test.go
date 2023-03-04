@@ -296,6 +296,16 @@ func TestInterpreter(t *testing.T) {
 			if (2 == 1+1 && true && (13 > 2 && 3 >= 3)) {result = 1; }`,
 			expected: toLoxObj(1),
 		},
+		{
+			desc:     "while",
+			input:    `let result = 0;
+			let i = 1;
+			while (i < 5) {
+				result = result + i;
+				i = i + 1;
+			}`,
+			expected: toLoxObj(10),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

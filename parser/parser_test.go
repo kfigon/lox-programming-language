@@ -339,6 +339,32 @@ func TestStatements(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc:  "while statement",
+			input: `while (foo == 123) {
+				bar = 18;
+				foo = foo + 1;
+			}`,
+			expected: []Statement{
+				WhileStatement{
+					Predicate: Binary{
+							Op: lexer.Token{lexer.Operator, "==", 1},
+							Left: Literal(lexer.Token{lexer.Identifier, "foo", 1}),
+							Right: Literal(lexer.Token{lexer.Number, "123", 1}),
+						}, 
+					Body: BlockStatement{
+						[]Statement {
+							AssignmentStatement{"bar", Literal(lexer.Token{lexer.Number, "18", 2})},
+							AssignmentStatement{"foo", Binary{
+								Op: lexer.Token{lexer.Operator, "+", 3},
+								Left: Literal(lexer.Token{lexer.Identifier, "foo", 3}),
+								Right: Literal(lexer.Token{lexer.Number, "1", 3}),
+							}},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

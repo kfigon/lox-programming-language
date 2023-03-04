@@ -47,6 +47,7 @@ type VisitorStatement interface {
 	VisitAssignmentStatement(AssignmentStatement) error
 	VisitBlockStatement(BlockStatement) error
 	VisitIfStatement(IfStatement) error
+	VisitWhileStatement(WhileStatement) error
 }
 
 type StatementExpression struct {
@@ -94,4 +95,13 @@ type IfBlock struct {
 
 func (i IfStatement) AcceptStatement(v VisitorStatement) error {
 	return v.VisitIfStatement(i)
+}
+
+type WhileStatement struct {
+	Predicate Expression
+	Body BlockStatement
+}
+
+func (w WhileStatement) AcceptStatement(v VisitorStatement) error {
+	return v.VisitWhileStatement(w)
 }

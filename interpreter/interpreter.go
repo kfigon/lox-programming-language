@@ -124,6 +124,7 @@ func (i *Interpreter) VisitBinary(b parser.Binary) (any, error) {
 		return nil, rightErr
 	}
 
+	// todo: short circuit might be a nice feature
 	leftBool, leftErr := castTo[bool](b.Op, &leftV)
 	rightBool, rightErr := castTo[bool](b.Op, &rightV)
 	if leftErr == nil && rightErr == nil {
@@ -217,6 +218,28 @@ func (i *Interpreter) VisitIfStatement(ifStmt parser.IfStatement) error {
 			return fmt.Errorf("non boolean expression in if statement")
 		} else if boolExp {
 			return ifEl.Body.AcceptStatement(i)
+		}
+	}
+	return nil
+}
+
+func (i *Interpreter) VisitWhileStatement(whileStmt parser.WhileStatement) error {
+	for {
+		v, err := whileStmt.Predicate.AcceptExpr(i)
+		if err != nil {
+			return fmt.Errorf("error during evaluating while predicate: %w", err)
+		}
+
+		boolExp, ok := canCast[bool](&v)
+		if !ok {
+			return fmt.Errorf("non boolean expression in while statement")
+		}
+		
+		if !boolExp {
+			break
+		}
+		if err = whileStmt.Body.AcceptStatement(i); err != nil {
+			return fmt.Errorf("error during processing while block: %w", err)
 		}
 	}
 	return nil
