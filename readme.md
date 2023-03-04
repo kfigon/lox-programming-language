@@ -34,7 +34,8 @@ statement      → letDecl
                | assignment
                | block
                | exprStmt 
-               | ifStmt;
+               | ifStmt
+               | whileStmt;
 
 block          → "{" statement* "}" ;
 letDecl        → "let" assignment
@@ -43,6 +44,8 @@ assignment     → IDENTIFIER "=" exprStmt
 ifStmt         → "if" "(" expression ")" block
                  ( "else" "if" "(" expression ")" block )* 
                  ( "else" block )?;
+
+whileStmt      → "while" "(" expression ")" block ;
 
 exprStmt       → expression ";" ;
 
