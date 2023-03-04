@@ -55,7 +55,12 @@ comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" | "%" ) unary )* ;
 unary          → ( "!" | "-" ) unary
+               | call
                | primary ;
+
+call           → IDENTIFIER ( "(" arguments? ")" )* ;
+arguments      → expression ( "," expression )* ;
+
 primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")" 
                | IDENTIFIER ;

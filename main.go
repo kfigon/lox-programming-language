@@ -26,46 +26,67 @@ func fileMode(fileName string) {
 		fmt.Printf("Cant open file %v: %v\n", fileName, err)
 		return
 	}
-	t, err := lexer.Lex(string(b))
+	stmts, err := parse(string(b))
 	if err != nil {
-		fmt.Println("Got error:", err)
+		fmt.Println(err)
 		return
 	}
-	fmt.Println(t)
+
+	in := interpreter.NewInterpreter()
+	for _, s := range stmts {
+		s.AcceptStatement(in)
+	}
 }
 
 func interpreterMode() {
 	fmt.Println("Welcome to lox interpreter")
 	fmt.Println("type 'quit' to exit")
+	in := interpreter.NewInterpreter()
+
 	for true {
 		fmt.Print("> ")
-		in := bufio.NewReader(os.Stdin)
-		line, _ := in.ReadString('\n')
-		line = strings.TrimSuffix(line, "\r\n")
-		line = strings.TrimSuffix(line, "\n")
+		line := getLine()
 
 		if line == "quit" || line == "exit" {
 			fmt.Println("Bye")
 			return
 		} else if line != "" {
-			t, err := lexer.Lex(line)
+			
+			stmts, err := parse(line)
 			if err != nil {
-				fmt.Println("got lexer error: ", err)
-				continue
+				fmt.Println(err)
+				return
 			}
-			exp, errs := parser.NewParser(t).Parse()
-			if len(errs) > 0 {
-				fmt.Println("got parser errors: ", errs)
-				continue
+
+			for _, s := range stmts {
+				s.AcceptStatement(in)
 			}
-			err = interpreter.Interpret(exp)
-			if err != nil {
-				fmt.Println("got interpreter error:", err)
-				continue
-			}
-			// for _,v := range got {
-			// 	fmt.Println(*(v.v))
-			// }
+
 		}
 	}
+}
+
+func getLine() string {
+	in := bufio.NewReader(os.Stdin)
+	line, _ := in.ReadString('\n')
+	line = strings.TrimSuffix(line, "\r\n")
+	line = strings.TrimSuffix(line, "\n")
+	return line
+}
+
+func parse(input string) ([]parser.Statement, error) {
+	toks, err := lexer.Lex(input)
+	if err != nil {
+		return nil, fmt.Errorf("lexer error: %w", err)
+	}
+	got, errs := parser.NewParser(toks).Parse()
+	if len(errs) != 0 {
+		v := []string{}
+		for _, e := range errs {
+			v = append(v, e.Error())
+		}
+		return nil, fmt.Errorf("parser errors: %s", strings.Join(v, ","))
+	}
+	
+	return got, nil
 }

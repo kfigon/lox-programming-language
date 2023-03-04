@@ -354,9 +354,7 @@ func parseIt(t *testing.T, input string) []parser.Statement {
 
 	got, errs := parser.NewParser(toks).Parse()
 	require.Empty(t, errs, "got parser errors")
-	if len(errs) != 0 {
-		return nil
-	}
+
 	return got
 }
 
