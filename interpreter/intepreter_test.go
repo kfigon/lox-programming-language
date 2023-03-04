@@ -290,6 +290,12 @@ func TestInterpreter(t *testing.T) {
 			if (x == 2 && false) {result = 1; }`,
 			expected: toLoxObj(-2),
 		},
+		{
+			desc:     "if with logic more operators",
+			input:    `let result = 0;
+			if (2 == 1+1 && true && (13 > 2 && 3 >= 3)) {result = 1; }`,
+			expected: toLoxObj(1),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
