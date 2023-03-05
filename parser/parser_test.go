@@ -366,8 +366,22 @@ func TestStatements(t *testing.T) {
 			},
 		},
 		{
-			desc: "function call",
-			input: `foo(1,someVariable)`,
+			desc: "function call 1",
+			input: `foo(1);`,
+			expected: []Statement{
+				StatementExpression{
+					FunctionCall{
+						"foo",
+						[]Expression{
+							Literal(lexer.Token{lexer.Number, "1", 1}),
+						},
+					},
+				},
+			},
+		},
+		{
+			desc: "function call 2",
+			input: `foo(1,someVariable);`,
 			expected: []Statement{
 				StatementExpression{
 					FunctionCall{
@@ -384,13 +398,48 @@ func TestStatements(t *testing.T) {
 			desc: "function call with return value",
 			input: `let bar = foo(1,someVariable);`,
 			expected: []Statement{
-				AssignmentStatement{
-					"bar",
-					FunctionCall{
-						"foo",
-						[]Expression{
-							Literal(lexer.Token{lexer.Number, "1", 1}),
-							Literal(lexer.Token{lexer.Identifier, "someVariable", 1}),
+				LetStatement{
+					AssignmentStatement{
+						"bar",
+						FunctionCall{
+							"foo",
+							[]Expression{
+								Literal(lexer.Token{lexer.Number, "1", 1}),
+								Literal(lexer.Token{lexer.Identifier, "someVariable", 1}),
+								},
+							},
+						},
+				},
+			},
+		},
+		{
+			desc: "function call in if statement",
+			input: `if(foobar() && asdf(1,2)){
+				x = 1;
+			}`,
+			expected: []Statement{
+				IfStatement{
+					Ifs: []IfBlock{
+						{
+							Predicate: Binary{
+								Op: lexer.Token{lexer.Operator, "&&", 1},
+								Left: FunctionCall{
+										"foobar",
+										[]Expression{},
+									},
+								Right: FunctionCall{
+									"asdf",
+									[]Expression{
+											Literal(lexer.Token{lexer.Number, "1", 1}),
+											Literal(lexer.Token{lexer.Number, "2", 1}),
+										},
+									},
+							},
+							Body: BlockStatement{
+								[]Statement{
+									AssignmentStatement{"x", Literal(lexer.Token{lexer.Number, "1", 2})},
+								},
+							},
 						},
 					},
 				},

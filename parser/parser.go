@@ -46,13 +46,15 @@ func (p *Parser) parseTerminatedExpression() (Expression, error) {
 
 func (p *Parser) parseStatement() (Statement, error) {
 	current, ok := p.it.current()
+	next, nextOk := p.it.peek()
+
 	if !ok {
 		return nil, eofError()
 	}
 
 	if lexer.CheckToken(current, lexer.Keyword, "let") {
 		return p.parseLetStatement()
-	} else if lexer.CheckTokenType(current, lexer.Identifier) {
+	} else if lexer.CheckTokenType(current, lexer.Identifier) && nextOk && lexer.CheckToken(next, lexer.Operator, "=") {
 		return p.parseAssignmentStatement()
 	} else if lexer.CheckToken(current, lexer.Opening, "{") {
 		return p.parseBlockStatement()
@@ -319,7 +321,47 @@ func (p *Parser) parseUnary() (Expression, error) {
 		}
 		return Unary{Op: op, Ex: e}, nil
 	}
-	return p.parsePrimary()
+	return p.parseCall()
+}
+
+func (p *Parser) parseCall() (Expression, error) {
+	next, nextOk := p.it.peek()
+	current, _ := p.it.current()
+	functionName := ""
+	if nextOk && lexer.CheckToken(next, lexer.Opening, "(") {
+		functionName = current.Lexeme
+	}
+
+	ex, err := p.parsePrimary()
+	if err != nil {
+		return nil, err
+	}
+
+	current, ok := p.it.current()
+	if ok && (lexer.CheckToken(current, lexer.Opening, "(")) {
+		p.it.consume()
+		args := []Expression{}
+		for {
+			current, ok = p.it.current()
+			if ok && lexer.CheckToken(current, lexer.Closing, ")") {
+				p.it.consume()
+				return FunctionCall{functionName, args}, nil
+			} else if ok && lexer.CheckTokenType(current, lexer.Comma) {
+				p.it.consume()
+				continue
+			} else if ok {
+				a, err := p.parseExpression()
+				if err != nil {
+					return nil, fmt.Errorf("argument expressions parsing error: %w", err)
+				}
+				args = append(args, a)
+			} else {
+				return nil, eofError()			
+			}
+		}
+	} 
+
+	return ex, nil
 }
 
 func (p *Parser) parsePrimary() (Expression, error) {

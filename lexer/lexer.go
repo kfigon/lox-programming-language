@@ -17,6 +17,7 @@ const (
 	Identifier
 	StringLiteral
 	Semicolon
+	Comma
 	null
 )
 
@@ -31,6 +32,7 @@ func (t TokenType) String() string {
 		"identifier",
 		"stringLiteral",
 		"semicolon",
+		"comma",
 		"null",
 	}[t]
 }
@@ -88,6 +90,8 @@ func Lex(input string) ([]Token, error) {
 			addTok(Closing, string(current))
 		} else if current == ';' {
 			addTok(Semicolon, string(current))
+		} else if current == ',' {
+			addTok(Comma, string(current))
 		} else if current == '(' || current == '{' {
 			addTok(Opening, string(current))
 		} else if current == '+' || current == '-' || current == '*' || current == '/' || current == '%' {
