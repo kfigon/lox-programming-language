@@ -365,6 +365,37 @@ func TestStatements(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc: "function call",
+			input: `foo(1,someVariable)`,
+			expected: []Statement{
+				StatementExpression{
+					FunctionCall{
+						"foo",
+						[]Expression{
+							Literal(lexer.Token{lexer.Number, "1", 1}),
+							Literal(lexer.Token{lexer.Identifier, "someVariable", 1}),
+						},
+					},
+				},
+			},
+		},
+		{
+			desc: "function call with return value",
+			input: `let bar = foo(1,someVariable);`,
+			expected: []Statement{
+				AssignmentStatement{
+					"bar",
+					FunctionCall{
+						"foo",
+						[]Expression{
+							Literal(lexer.Token{lexer.Number, "1", 1}),
+							Literal(lexer.Token{lexer.Identifier, "someVariable", 1}),
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

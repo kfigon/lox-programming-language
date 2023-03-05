@@ -256,3 +256,7 @@ func (i *Interpreter) VisitWhileStatement(whileStmt parser.WhileStatement) error
 	}
 	return nil
 }
+
+func (i *Interpreter) VisitFunctionCall(fn parser.FunctionCall) (any, error) {
+	return nil,nil
+}

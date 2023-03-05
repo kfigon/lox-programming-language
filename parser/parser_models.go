@@ -10,6 +10,7 @@ type VisitorExpr interface {
 	VisitLiteral(Literal) (any, error)
 	VisitUnary(Unary) (any, error)
 	VisitBinary(Binary) (any, error)
+	VisitFunctionCall(FunctionCall) (any, error)
 }
 
 type Literal lexer.Token
@@ -110,4 +111,13 @@ type FunctionDeclaration struct {
 	Name string
 	Args []string
 	Body BlockStatement
+}
+
+type FunctionCall struct {
+	Name string
+	Args []Expression
+}
+
+func (f FunctionCall) AcceptExpr(v VisitorExpr) (any, error) {
+	return v.VisitFunctionCall(f)
 }
