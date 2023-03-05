@@ -128,6 +128,10 @@ func TestParserErrors(t *testing.T) {
 			desc:  "eof on binary",
 			input: "1+",
 		},
+		{
+			desc:  "no commas on function arguments",
+			input: "foo(1 2);",
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
@@ -367,6 +371,18 @@ func TestStatements(t *testing.T) {
 		},
 		{
 			desc: "function call 1",
+			input: `foo();`,
+			expected: []Statement{
+				StatementExpression{
+					FunctionCall{
+						"foo",
+						[]Expression{},
+					},
+				},
+			},
+		},
+		{
+			desc: "function call 2",
 			input: `foo(1);`,
 			expected: []Statement{
 				StatementExpression{
@@ -380,7 +396,7 @@ func TestStatements(t *testing.T) {
 			},
 		},
 		{
-			desc: "function call 2",
+			desc: "function call 3",
 			input: `foo(1,someVariable);`,
 			expected: []Statement{
 				StatementExpression{
