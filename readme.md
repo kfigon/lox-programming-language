@@ -2,6 +2,8 @@
 
 based on https://craftinginterpreters.com/contents.html
 
+Interpreted (tree walker), dynamically typed, statement based, simple C-like language in Go.
+
 ## run
 ```
 make run
