@@ -411,6 +411,23 @@ func TestStatements(t *testing.T) {
 			},
 		},
 		{
+			desc: "function call 4",
+			input: `foo(1,someVariable,true, asdf);`,
+			expected: []Statement{
+				StatementExpression{
+					FunctionCall{
+						"foo",
+						[]Expression{
+							Literal(lexer.Token{lexer.Number, "1", 1}),
+							Literal(lexer.Token{lexer.Identifier, "someVariable", 1}),
+							Literal(lexer.Token{lexer.Boolean, "true", 1}),
+							Literal(lexer.Token{lexer.Identifier, "asdf", 1}),
+						},
+					},
+				},
+			},
+		},
+		{
 			desc: "function call with return value",
 			input: `let bar = foo(1,someVariable);`,
 			expected: []Statement{
