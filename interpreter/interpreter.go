@@ -12,9 +12,15 @@ type Interpreter struct {
 }
 
 func NewInterpreter() *Interpreter {
+	env := newEnv()
+	initStdLib(env)
 	return &Interpreter{
-		env: newEnv(),
+		env: env,
 	}
+}
+
+func initStdLib(env *environment) {
+
 }
 
 func Interpret(stms []parser.Statement) error {
@@ -256,6 +262,11 @@ func (i *Interpreter) VisitWhileStatement(whileStmt parser.WhileStatement) error
 	}
 	return nil
 }
+
+func (i *Interpreter) VisitFunctionDeclarationStatement(fn parser.FunctionDeclaration) error {
+	return nil
+}
+
 
 func (i *Interpreter) VisitFunctionCall(fn parser.FunctionCall) (any, error) {
 	return nil,nil

@@ -478,6 +478,86 @@ func TestStatements(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc: "function declaration 1",
+			input: `function foo(argx) {
+				x = 1;
+			}`,
+			expected: []Statement{
+				FunctionDeclaration{
+					"foo",
+					[]Argument{"argx"},
+					BlockStatement{
+						[]Statement{
+							AssignmentStatement{
+								"x",
+								Literal(lexer.Token{lexer.Number, "1", 2}),
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			desc: "function declaration 2",
+			input: `function foo() {
+				print("hello!");
+			}`,
+			expected: []Statement{
+				FunctionDeclaration{
+					"foo",
+					[]Argument{},
+					BlockStatement{
+						[]Statement{
+							StatementExpression{
+								FunctionCall{
+									"print",
+									[]Expression{Literal(lexer.Token{lexer.StringLiteral, "hello!", 2})},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			desc: "function declaration 3",
+			input: `function foo(asd, sad, bar) {
+				x = asd + sad + bar;
+			}`,
+			expected: []Statement{
+				FunctionDeclaration{
+					"foo",
+					[]Argument{"asd", "sad", "bar"},
+					BlockStatement{
+						[]Statement{
+							AssignmentStatement{
+								"x",
+								Binary{
+									Op: lexer.Token{lexer.Operator, "+", 2},
+									Left: Binary{
+										Op: lexer.Token{lexer.Operator, "+", 2},
+										Left: Literal(lexer.Token{lexer.Identifier, "asd", 2}),
+										Right: Literal(lexer.Token{lexer.Identifier, "sad", 2}),
+									},
+									Right: Literal(lexer.Token{lexer.Identifier, "bar", 2}),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		// todo: return statement
+		// {
+		// 	desc: "function declaration 4",
+		// 	input: `function foo(asd, bar) {
+		// 		return 1 + asd;
+		// 	}`,
+		// 	expected: []Statement{
+		// 		FunctionDeclaration{},
+		// 	},
+		// },
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

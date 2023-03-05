@@ -62,6 +62,8 @@ func (p *Parser) parseStatement() (Statement, error) {
 		return p.parseIfStatement()
 	} else if lexer.CheckToken(current, lexer.Keyword, "while") {
 		return p.parseWhileStatement()
+	} else if lexer.CheckToken(current, lexer.Keyword, "function") {
+		return p.parseFunctionDeclaration()
 	}
 
 	v, err := p.parseTerminatedExpression()
@@ -215,6 +217,63 @@ func (p *Parser) parseAssignmentStatement() (AssignmentStatement, error) {
 	return AssignmentStatement{name, v}, nil
 }
 
+func (p *Parser) parseFunctionDeclaration() (FunctionDeclaration, error) {
+	p.it.consume() // function
+	
+	if err := p.ensureCurrentTokenType(lexer.Identifier); err != nil {
+		return FunctionDeclaration{}, fmt.Errorf("invalid function declaration: %w", err)
+	}
+	current, _ := p.it.current()
+	name := current.Lexeme
+	p.it.consume()// identifier
+
+	if err := p.ensureCurrentToken(lexer.Opening, "("); err != nil {
+		return FunctionDeclaration{}, fmt.Errorf("invalid function declaration: %w", err)
+	}
+
+	p.it.consume() // (
+	args := []Argument{}
+	for {
+		current, ok := p.it.current()
+		if !ok {
+			return FunctionDeclaration{}, eofError()
+		} else if lexer.CheckToken(current, lexer.Closing, ")") {
+			p.it.consume()
+			break
+		} else if err := p.ensureCurrentTokenType(lexer.Identifier); err != nil {
+			return FunctionDeclaration{}, makeError(current, "invalid function declaration, expected identifiers or ')'")
+		}
+
+		args = append(args, Argument(current.Lexeme))
+		p.it.consume() // identifier
+	
+		current, ok = p.it.current()
+		if !ok {
+			return FunctionDeclaration{}, eofError()
+		} else if lexer.CheckToken(current, lexer.Closing, ")") {
+			p.it.consume()
+			break
+		} else if err := p.ensureCurrentTokenType(lexer.Comma); err != nil {
+			return FunctionDeclaration{}, fmt.Errorf("function arguments should be comma separated: %w", err)
+		}
+		p.it.consume() // ,
+	}
+
+	if err := p.ensureCurrentToken(lexer.Opening, "{"); err != nil {
+		return FunctionDeclaration{}, fmt.Errorf("invalid function declaration: %w", err)
+	}
+	block, err := p.parseBlockStatement()
+	if err != nil {
+		return FunctionDeclaration{}, fmt.Errorf("invalid function declaration: %w", err)
+	}
+
+	return FunctionDeclaration{
+		Name: name,
+		Args: args,
+		Body: block,
+	}, nil
+}
+
 func (p *Parser) parseExpression() (Expression, error) {
 	return p.parseEquality()
 }
@@ -325,9 +384,9 @@ func (p *Parser) parseUnary() (Expression, error) {
 
 func (p *Parser) parseCall() (Expression, error) {
 	next, nextOk := p.it.peek()
-	current, _ := p.it.current()
+	current, ok := p.it.current()
 	functionName := ""
-	if nextOk && lexer.CheckToken(next, lexer.Opening, "(") {
+	if ok && lexer.CheckTokenType(current, lexer.Identifier) && nextOk && lexer.CheckToken(next, lexer.Opening, "(") {
 		functionName = current.Lexeme
 	}
 
@@ -336,11 +395,15 @@ func (p *Parser) parseCall() (Expression, error) {
 		return nil, err
 	}
 
-	current, ok := p.it.current()
+	current, ok = p.it.current()
 	if !ok || !lexer.CheckToken(current, lexer.Opening, "(") {
 		return ex, nil
 	}
 
+	if functionName == "" {
+		return nil, makeError(next, "empty function name found")
+	}
+	
 	p.it.consume() // (
 	current, ok = p.it.current()
 	if !ok {

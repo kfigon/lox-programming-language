@@ -306,6 +306,24 @@ func TestInterpreter(t *testing.T) {
 			}`,
 			expected: toLoxObj(10),
 		},
+		{
+			desc:     "function",
+			input:    `let result = 0;
+			function foo() {
+				result = 1;
+			}
+			foo();`,
+			expected: toLoxObj(1),
+		},
+		{
+			desc:     "function with args",
+			input:    `let result = 0;
+			function foo(a) {
+				result = a;
+			}
+			foo(12);`,
+			expected: toLoxObj(12),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

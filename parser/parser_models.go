@@ -49,6 +49,7 @@ type VisitorStatement interface {
 	VisitBlockStatement(BlockStatement) error
 	VisitIfStatement(IfStatement) error
 	VisitWhileStatement(WhileStatement) error
+	VisitFunctionDeclarationStatement(FunctionDeclaration) error
 }
 
 type StatementExpression struct {
@@ -107,10 +108,15 @@ func (w WhileStatement) AcceptStatement(v VisitorStatement) error {
 	return v.VisitWhileStatement(w)
 }
 
+type Argument string
 type FunctionDeclaration struct {
 	Name string
-	Args []string
+	Args []Argument
 	Body BlockStatement
+}
+
+func (f FunctionDeclaration) AcceptStatement(v VisitorStatement) error {
+	return v.VisitFunctionDeclarationStatement(f)
 }
 
 type FunctionCall struct {
