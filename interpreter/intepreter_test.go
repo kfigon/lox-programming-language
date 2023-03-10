@@ -354,7 +354,7 @@ func TestInterpreter(t *testing.T) {
 			desc:     "blocked while",
 			input:    `let result = 0;
 			{
-				i = 1;
+				let i = 1;
 				while (i <= 3) {
 					result = result + i;
 					i = i + 1;
@@ -368,11 +368,11 @@ func TestInterpreter(t *testing.T) {
 				if (i <= 1) {
 					result = i;
 				} else {
-					prevPrev = 0;
-					prev = 0;
-					curr = 1;
+					let prevPrev = 0;
+					let prev = 0;
+					let curr = 1;
 			
-					cntr = 1;
+					let cntr = 1;
 					while (cntr < i) {
 						prevPrev = prev;
 						prev = curr;

@@ -2,11 +2,11 @@ function fibo(i) {
     if (i <= 1) {
         print(i);
     } else {
-        prevPrev = 0;
-        prev = 0;
-        curr = 1;
+        let prevPrev = 0;
+        let prev = 0;
+        let curr = 1;
 
-        cntr = 1;
+        let cntr = 1;
         while (cntr < i) {
             prevPrev = prev;
             prev = curr;
