@@ -548,16 +548,6 @@ func TestStatements(t *testing.T) {
 				},
 			},
 		},
-		// todo: return statement
-		// {
-		// 	desc: "function declaration 4",
-		// 	input: `function foo(asd, bar) {
-		// 		return 1 + asd;
-		// 	}`,
-		// 	expected: []Statement{
-		// 		FunctionDeclaration{},
-		// 	},
-		// },
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
