@@ -206,12 +206,14 @@ func (i *Interpreter) VisitBinary(b parser.Binary) (any, error) {
 }
 
 func (i *Interpreter) VisitBlockStatement(b parser.BlockStatement) error {
-	previous := i.env
+	return i.blockStatementEval(b, i.env, newEnv())
+}
+
+func (i *Interpreter) blockStatementEval(b parser.BlockStatement, previous *environment, scopeEnv *environment) error {
 	defer func (){
 		i.env = previous
 	}()
 
-	scopeEnv := newEnv()
 	scopeEnv.enclosing = previous
 	i.env = scopeEnv
 
@@ -220,7 +222,6 @@ func (i *Interpreter) VisitBlockStatement(b parser.BlockStatement) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -264,10 +265,36 @@ func (i *Interpreter) VisitWhileStatement(whileStmt parser.WhileStatement) error
 }
 
 func (i *Interpreter) VisitFunctionDeclarationStatement(fn parser.FunctionDeclaration) error {
+	i.env.create(fn.Name, toLoxObj(LoxFunction{
+		body: fn.Body,
+		args: fn.Args,
+	}))
 	return nil
 }
 
 
-func (i *Interpreter) VisitFunctionCall(fn parser.FunctionCall) (any, error) {
-	return nil,nil
+func (i *Interpreter) VisitFunctionCall(call parser.FunctionCall) (any, error) {
+	obj, ok := i.env.get(call.Name)
+	if !ok {
+		return nil, fmt.Errorf("can't find function %v", call.Name)
+	}
+	fun, ok := getFromLoxObj[LoxFunction](obj)
+	if !ok {
+		return nil, fmt.Errorf("%v is not a function", call.Name)
+	}
+
+	scopedEnv := newEnv()
+	for j, arg := range call.Args {
+		v, err := arg.AcceptExpr(i)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating args to function %v: %w", call.Name, err)
+		}
+		scopedEnv.create(fun.args[j], v.(LoxObject))
+	}
+
+	err := i.blockStatementEval(fun.body, i.env, scopedEnv)
+	if err != nil {
+		return nil, fmt.Errorf("error during evaluating function %v: %w", call.Name, err)
+	}
+	return nil,nil // todo: return statement
 }

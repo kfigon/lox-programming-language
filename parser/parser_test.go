@@ -486,7 +486,7 @@ func TestStatements(t *testing.T) {
 			expected: []Statement{
 				FunctionDeclaration{
 					"foo",
-					[]Argument{"argx"},
+					[]string{"argx"},
 					BlockStatement{
 						[]Statement{
 							AssignmentStatement{
@@ -506,7 +506,7 @@ func TestStatements(t *testing.T) {
 			expected: []Statement{
 				FunctionDeclaration{
 					"foo",
-					[]Argument{},
+					[]string{},
 					BlockStatement{
 						[]Statement{
 							StatementExpression{
@@ -528,7 +528,7 @@ func TestStatements(t *testing.T) {
 			expected: []Statement{
 				FunctionDeclaration{
 					"foo",
-					[]Argument{"asd", "sad", "bar"},
+					[]string{"asd", "sad", "bar"},
 					BlockStatement{
 						[]Statement{
 							AssignmentStatement{

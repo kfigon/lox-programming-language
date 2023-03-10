@@ -232,7 +232,7 @@ func (p *Parser) parseFunctionDeclaration() (FunctionDeclaration, error) {
 	}
 
 	p.it.consume() // (
-	args := []Argument{}
+	args := []string{}
 	for {
 		current, ok := p.it.current()
 		if !ok {
@@ -244,7 +244,7 @@ func (p *Parser) parseFunctionDeclaration() (FunctionDeclaration, error) {
 			return FunctionDeclaration{}, makeError(current, "invalid function declaration, expected identifiers or ')'")
 		}
 
-		args = append(args, Argument(current.Lexeme))
+		args = append(args, current.Lexeme)
 		p.it.consume() // identifier
 	
 		current, ok = p.it.current()

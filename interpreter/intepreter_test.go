@@ -316,13 +316,22 @@ func TestInterpreter(t *testing.T) {
 			expected: toLoxObj(1),
 		},
 		{
-			desc:     "function with args",
+			desc:     "function with arg",
 			input:    `let result = 0;
 			function foo(a) {
 				result = a;
 			}
 			foo(12);`,
 			expected: toLoxObj(12),
+		},
+		{
+			desc:     "function with args",
+			input:    `let result = 0;
+			function foo(a,b) {
+				result = a + b;
+			}
+			foo(12, 3+2);`,
+			expected: toLoxObj(17),
 		},
 		{
 			desc:     "function double called",

@@ -108,10 +108,9 @@ func (w WhileStatement) AcceptStatement(v VisitorStatement) error {
 	return v.VisitWhileStatement(w)
 }
 
-type Argument string
 type FunctionDeclaration struct {
 	Name string
-	Args []Argument
+	Args []string
 	Body BlockStatement
 }
 
