@@ -17,7 +17,6 @@ func toLoxObj(v any) LoxObject {
 type LoxFunction struct {
 	body parser.BlockStatement
 	args []string
-	returnValue LoxObject
 }
 
 func castTo[T any](t lexer.Token, v *any) (T, error) {

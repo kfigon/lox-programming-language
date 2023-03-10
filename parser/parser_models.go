@@ -50,6 +50,7 @@ type VisitorStatement interface {
 	VisitIfStatement(IfStatement) error
 	VisitWhileStatement(WhileStatement) error
 	VisitFunctionDeclarationStatement(FunctionDeclaration) error
+	VisitNativeCallStatement(NativeCallStatement) error
 }
 
 type StatementExpression struct {
@@ -116,6 +117,15 @@ type FunctionDeclaration struct {
 
 func (f FunctionDeclaration) AcceptStatement(v VisitorStatement) error {
 	return v.VisitFunctionDeclarationStatement(f)
+}
+
+type NativeCallStatement struct {
+	Fn func([]any) error
+	Args []string
+}
+
+func (n NativeCallStatement) AcceptStatement(v VisitorStatement) error {
+	return v.VisitNativeCallStatement(n)
 }
 
 type FunctionCall struct {

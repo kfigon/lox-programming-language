@@ -20,8 +20,26 @@ func NewInterpreter() *Interpreter {
 }
 
 func initStdLib(env *environment) {
+	build := func(args []string, fn func([]any) error) LoxObject {
+		return toLoxObj(LoxFunction{
+			body: parser.BlockStatement{
+				Stmts: []parser.Statement{
+					parser.NativeCallStatement{
+						Fn: fn,
+						Args: args,
+					},
+				},
+			},
+			args: args,
+		})
+	}
 
+	env.create("print", build([]string{"str"}, func(args []any) error {
+		fmt.Println(args[0])
+		return nil
+	}))
 }
+
 
 func Interpret(stms []parser.Statement) error {
 	i := NewInterpreter()
@@ -272,6 +290,17 @@ func (i *Interpreter) VisitFunctionDeclarationStatement(fn parser.FunctionDeclar
 	return nil
 }
 
+func (i *Interpreter) VisitNativeCallStatement(fn parser.NativeCallStatement) error {
+	args := []any{}
+	for _, arg := range fn.Args {
+		a, ok := i.env.get(arg)
+		if !ok {
+			return fmt.Errorf("native call error - can't find variable %v", arg)
+		}
+		args = append(args, *a.v)
+	}
+	return fn.Fn(args)
+}
 
 func (i *Interpreter) VisitFunctionCall(call parser.FunctionCall) (any, error) {
 	obj, ok := i.env.get(call.Name)
@@ -292,8 +321,7 @@ func (i *Interpreter) VisitFunctionCall(call parser.FunctionCall) (any, error) {
 		scopedEnv.create(fun.args[j], v.(LoxObject))
 	}
 
-	err := i.blockStatementEval(fun.body, i.env, scopedEnv)
-	if err != nil {
+	if err := i.blockStatementEval(fun.body, i.env, scopedEnv); err != nil {
 		return nil, fmt.Errorf("error during evaluating function %v: %w", call.Name, err)
 	}
 	return nil,nil // todo: return statement

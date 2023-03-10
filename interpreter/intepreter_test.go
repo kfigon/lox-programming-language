@@ -343,6 +343,12 @@ func TestInterpreter(t *testing.T) {
 			foo(3);`,
 			expected: toLoxObj(5),
 		},
+		{
+			desc:     "std lib call",
+			input:    `let result = 0;
+			print("foo");`,
+			expected: toLoxObj(0),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
