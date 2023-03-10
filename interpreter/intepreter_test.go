@@ -297,6 +297,13 @@ func TestInterpreter(t *testing.T) {
 			expected: toLoxObj(1),
 		},
 		{
+			desc:     "if with logic more operators",
+			input:    `let result = 0;
+			let i = 15;
+			if ((i % 3 == 0) && (i % 5 == 0)) {result = 1; }`,
+			expected: toLoxObj(1),
+		},
+		{
 			desc:     "while",
 			input:    `let result = 0;
 			let i = 1;
@@ -342,6 +349,43 @@ func TestInterpreter(t *testing.T) {
 			foo(2);
 			foo(3);`,
 			expected: toLoxObj(5),
+		},
+		{
+			desc:     "blocked while",
+			input:    `let result = 0;
+			{
+				i = 1;
+				while (i <= 3) {
+					result = result + i;
+					i = i + 1;
+				}
+			}`,
+			expected: toLoxObj(6),
+		},
+		{
+			desc:     "fibonacci",
+			input:    `function fibo(i) {
+				if (i <= 1) {
+					result = i;
+				} else {
+					prevPrev = 0;
+					prev = 0;
+					curr = 1;
+			
+					cntr = 1;
+					while (cntr < i) {
+						prevPrev = prev;
+						prev = curr;
+						curr = prevPrev + prev;
+						result = curr;
+
+						cntr = cntr + 1;
+					}
+				}
+			}
+			let result = 0;
+			fibo(8);`,
+			expected: toLoxObj(21),
 		},
 		{
 			desc:     "std lib call",

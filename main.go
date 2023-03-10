@@ -34,7 +34,10 @@ func fileMode(fileName string) {
 
 	in := interpreter.NewInterpreter()
 	for _, s := range stmts {
-		s.AcceptStatement(in)
+		if err := s.AcceptStatement(in); err != nil {
+			fmt.Println("got error:", err)
+			return
+		}
 	}
 }
 

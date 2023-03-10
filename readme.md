@@ -10,7 +10,7 @@ make run
 ```
 ### more params
 * run without params to run interpreter
-* `go run . ` with a file name to run the interpreter on the file itself
+* `go run . ` with a file name to run the interpreter on the file itself (`go run . fiz_buzz.lox`)
 
 
 ## test
