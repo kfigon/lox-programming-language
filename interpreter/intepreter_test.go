@@ -324,6 +324,16 @@ func TestInterpreter(t *testing.T) {
 			foo(12);`,
 			expected: toLoxObj(12),
 		},
+		{
+			desc:     "function double called",
+			input:    `function foo(a) {
+				result = result + a;
+			}
+			let result = 0;
+			foo(2);
+			foo(3);`,
+			expected: toLoxObj(5),
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
