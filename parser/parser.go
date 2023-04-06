@@ -279,91 +279,48 @@ func (p *Parser) parseExpression() (Expression, error) {
 }
 
 func (p *Parser) parseEquality() (Expression, error) {
-	ex, err := p.parseComparison()
-	if err != nil {
-		return nil, err
-	}
-	for {
-		current, ok := p.it.current()
-		if ok && (lexer.CheckToken(current, lexer.Operator, "!=") || 
-				lexer.CheckToken(current, lexer.Operator, "==") ||
-				lexer.CheckToken(current, lexer.Operator, "&&") ||
-				lexer.CheckToken(current, lexer.Operator, "||")) {
-			p.it.consume()
-			e, err := p.parseComparison()
-			if err != nil {
-				return nil, err
-			}
-			ex = Binary{Op: current, Left: ex, Right: e}
-		} else {
-			break
-		}
-	}
-	return ex, nil
+	return p.parseBinaryHelper(p.parseComparison, []string{"!=", "==", "&&", "||"})
 }
 
 func (p *Parser) parseComparison() (Expression, error) {
-	ex, err := p.parseTerm()
-	if err != nil {
-		return nil, err
-	}
-	for {
-		current, ok := p.it.current()
-		if ok && (lexer.CheckToken(current, lexer.Operator, ">") ||
-			lexer.CheckToken(current, lexer.Operator, ">=") ||
-			lexer.CheckToken(current, lexer.Operator, "<") ||
-			lexer.CheckToken(current, lexer.Operator, "<=")) {
-			p.it.consume()
-			e, err := p.parseTerm()
-			if err != nil {
-				return nil, err
-			}
-			ex = Binary{Op: current, Left: ex, Right: e}
-		} else {
-			break
-		}
-	}
-	return ex, nil
+	return p.parseBinaryHelper(p.parseTerm, []string{">", ">=", "<", "<="})
 }
 
 func (p *Parser) parseTerm() (Expression, error) {
-	ex, err := p.parseFactor()
-	if err != nil {
-		return nil, err
-	}
-	for {
-		current, ok := p.it.current()
-		if ok && (lexer.CheckToken(current, lexer.Operator, "-") || lexer.CheckToken(current, lexer.Operator, "+")) {
-			p.it.consume()
-			e, err := p.parseFactor()
-			if err != nil {
-				return nil, err
-			}
-			ex = Binary{Op: current, Left: ex, Right: e}
-		} else {
-			break
-		}
-	}
-	return ex, nil
+	return p.parseBinaryHelper(p.parseFactor, []string{"-", "+"})
 }
 
 func (p *Parser) parseFactor() (Expression, error) {
-	ex, err := p.parseUnary()
+	return p.parseBinaryHelper(p.parseUnary, []string{"/", "*", "%"})
+}
+
+func (p *Parser) parseBinaryHelper(parseExpressionFn func()(Expression,error), allowedOperators []string) (Expression,error) {
+	ex, err := parseExpressionFn()
 	if err != nil {
 		return nil, err
 	}
+
+	currentTokenInSet := func (current lexer.Token) bool {
+		for _, v := range allowedOperators {
+			if lexer.CheckToken(current, lexer.Operator, v) {
+				return true
+			}
+		}
+		return false
+	}
+
 	for {
 		current, ok := p.it.current()
-		if ok && (lexer.CheckToken(current, lexer.Operator, "/") || lexer.CheckToken(current, lexer.Operator, "*") || lexer.CheckToken(current, lexer.Operator, "%")) {
-			p.it.consume()
-			e, err := p.parseUnary()
-			if err != nil {
-				return nil, err
-			}
-			ex = Binary{Op: current, Left: ex, Right: e}
-		} else {
+		if !ok || !currentTokenInSet(current) {
 			break
 		}
+		
+		p.it.consume()
+		e, err := parseExpressionFn()
+		if err != nil {
+			return nil, err
+		}
+		ex = Binary{Op: current, Left: ex, Right: e}
 	}
 	return ex, nil
 }
